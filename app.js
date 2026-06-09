@@ -621,60 +621,21 @@ async function placeOrder() {
   btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Traitement en cours...';
   btn.disabled = true;
 
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 1800));
 
-  try {
-    const firstname = document.getElementById('co-firstname').value;
-    const lastname = document.getElementById('co-lastname').value;
-    const email = document.getElementById('co-email').value;
-    const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-    const total = Math.max(0, sub + checkoutDeliveryCost - checkoutPromoDiscount);
-    const deliveryType = document.querySelector('input[name="delivery"]:checked')?.value || 'standard';
-    const countryEl = document.getElementById('co-country');
-    const address = [
-      document.getElementById('co-address').value,
-      document.getElementById('co-address2')?.value,
-      document.getElementById('co-zip').value + ' ' + document.getElementById('co-city').value,
-      countryEl?.options[countryEl.selectedIndex]?.text
-    ].filter(Boolean).join(', ');
-
-    // Envoyer email de confirmation
+  // Vider le panier
+  if (currentUser && accessToken) {
     try {
-      await fetch('/api/send-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerEmail: email,
-          customerName: firstname + ' ' + lastname,
-          items: cart.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
-          total: total,
-          deliveryType: deliveryType,
-          address: address
-        })
-      });
-    } catch (e) { console.error('Email error:', e); }
-
-    // Vider le panier
-    if (currentUser && accessToken) {
-      try {
-        for (const item of cart) {
-          if (item.dbId) await sbDelete('cart_items?id=eq.' + item.dbId, accessToken);
-        }
-      } catch (e) {}
-    }
-
-    cart = [];
-    updateCartBadge();
-    renderCart();
-    showPage('home');
-    notif('✓ Paiement confirmé ! Un email de confirmation vous a été envoyé.');
-
-  } catch (e) {
-    const errEl = document.getElementById('stripe-error');
-    if (errEl) errEl.textContent = 'Erreur : ' + e.message;
-    btn.innerHTML = 'Confirmer et payer';
-    btn.disabled = false;
+      for (const item of cart) {
+        if (item.dbId) await sbDelete('cart_items?id=eq.' + item.dbId, accessToken);
+      }
+    } catch (e) {}
   }
+
+  cart = [];
+  updateCartBadge();
+  renderCart();
+  showPage('confirmation');
 }
 
 /* ══════════════════════════════
