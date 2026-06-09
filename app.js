@@ -728,7 +728,7 @@ function renderAll() {
 
   const bfilt = document.getElementById('brand-filters');
   if (bfilt) bfilt.innerHTML = allBrands.map(b =>
-    `<label class="filter-check"><input type="checkbox"><span>${b.name}</span></label>`
+    `<label class="filter-check"><input type="checkbox" value="${b.name}" onchange="filterShop()"><span>${b.name}</span></label>`
   ).join('');
 
   filterShop();
@@ -738,9 +738,14 @@ function filterShop() {
   const q = (document.getElementById('shop-search-input')?.value || '').toLowerCase().trim();
   const maxP = parseInt(document.getElementById('pmax')?.textContent) || 500;
   const sort = document.querySelector('.shop-sort select')?.value || 'popular';
+
+  // Get selected brands
+  const checkedBrands = [...document.querySelectorAll('#brand-filters input[type=checkbox]:checked')].map(cb => cb.value.toLowerCase());
+
   let list = products.filter(p => {
     const ms = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.notes_top || []).join(' ').toLowerCase().includes(q);
-    return ms && p.price <= maxP;
+    const mb = checkedBrands.length === 0 || checkedBrands.includes(p.brand.toLowerCase());
+    return ms && mb && p.price <= maxP;
   });
   if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
   else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
