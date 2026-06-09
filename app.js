@@ -774,6 +774,10 @@ function openProduct(id) {
   const descEl = document.getElementById('tab-desc');
   if (descEl) descEl.textContent = p.description || 'Un parfum d\'exception, alliant les matières premières les plus précieuses à un savoir-faire artisanal unique.';
 
+  // Fill ingredients tab
+  const ingrEl = document.getElementById('tab-ingr');
+  if (ingrEl) ingrEl.textContent = p.ingredients || 'Alcohol Denat., Parfum (Fragrance), Aqua (Water), Linalool, Coumarin, Limonene. Peut contenir des allergènes.';
+
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(tp => tp.classList.remove('active'));
   document.querySelectorAll('.tab-btn')[0].classList.add('active');
