@@ -1,0 +1,8 @@
+{
+  "name": "ak-fragrance",
+  "version": "1.0.0",
+  "description": "AK Fragrance - Parfumerie de niche",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
