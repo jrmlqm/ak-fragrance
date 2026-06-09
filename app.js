@@ -770,6 +770,10 @@ function openProduct(id) {
   document.getElementById('notes-top').innerHTML = (p.notes_top || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-heart').innerHTML = (p.notes_heart || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-base').innerHTML = (p.notes_base || []).map(n => `<span class="note-tag">${n}</span>`).join('');
+  // Fill description tab
+  const descEl = document.getElementById('tab-desc');
+  if (descEl) descEl.textContent = p.description || 'Un parfum d\'exception, alliant les matières premières les plus précieuses à un savoir-faire artisanal unique.';
+
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(tp => tp.classList.remove('active'));
   document.querySelectorAll('.tab-btn')[0].classList.add('active');
