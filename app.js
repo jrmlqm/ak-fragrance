@@ -892,3 +892,25 @@ function notif(msg) {
 ══════════════════════════════ */
 loadData();
 renderCart();
+async function updateProfile() {
+  const session = JSON.parse(localStorage.getItem('ak_session') || 'null');
+  if (!session) return;
+  const firstname = document.getElementById('acc-firstname')?.value.trim() || '';
+  const lastname = document.getElementById('acc-lastname')?.value.trim() || '';
+  const phone = document.getElementById('acc-phone')?.value.trim() || '';
+  const address = document.getElementById('acc-address')?.value.trim() || '';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json'},
+      body: JSON.stringify({data: {firstname, lastname, phone, address}})
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const newSession = {...session, user: data};
+      localStorage.setItem('ak_session', JSON.stringify(newSession));
+      currentUser = data;
+      notif('Coordonnées mises à jour ✓');
+    }
+  } catch(e) { notif('Erreur : ' + e.message); }
+}
