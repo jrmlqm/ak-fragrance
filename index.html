@@ -308,14 +308,29 @@
 <div class="page" id="page-account">
   <div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:60px 20px">
     <!-- VUE CONNECTÉ -->
-    <div id="account-connected" style="display:none;text-align:center;max-width:400px;width:100%">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brown-dark);margin-bottom:8px">Mon <em>Compte</em></div>
-      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:40px" id="account-email-display"></div>
-      <div style="background:var(--cream);padding:36px;margin-bottom:16px;text-align:left">
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px">Connecté en tant que</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)" id="account-name-display"></div>
+    <div id="account-connected" style="display:none;width:100%;max-width:700px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brown-dark);margin-bottom:8px;text-align:center">Mon <em>Compte</em></div>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:40px;text-align:center" id="account-email-display"></div>
+
+      <!-- INFOS -->
+      <div style="background:var(--cream);padding:28px 32px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px">Connecté en tant que</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)" id="account-name-display"></div>
+        </div>
+        <button class="btn-secondary" style="padding:10px 24px;font-size:9px" onclick="doLogout()">Se déconnecter</button>
       </div>
-      <button class="btn-secondary" style="width:100%;padding:16px" onclick="doLogout()">Se déconnecter</button>
+
+      <!-- FAVORIS -->
+      <div style="background:var(--cream);padding:28px 32px;margin-bottom:16px">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--brown-dark);margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          Mes Favoris
+          <span id="fav-count" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;color:var(--brown-light)"></span>
+        </div>
+        <div id="fav-list">
+          <p style="font-size:13px;color:var(--text-muted)">Aucun favori pour le moment.</p>
+        </div>
+      </div>
     </div>
     <!-- VUE DÉCONNECTÉ : géré par auth modal -->
     <div id="account-disconnected" style="text-align:center;max-width:400px;width:100%">

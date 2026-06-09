@@ -270,7 +270,7 @@ function updateAccountUI() {
 }
 
 function handleAccountClick() { if (currentUser) { showPage('account'); } else { openAuth('login'); } }
-function handleFavClick() { if (currentUser) { showPage('account'); } else { openAuth('login'); } }
+function handleFavClick() { if (currentUser) { showPage('account'); } else { openAuth('login'); notif('Connectez-vous pour voir vos favoris'); } }
 
 /* ── AUTH MODAL ── */
 function openAuth(tab = 'login') {
@@ -328,6 +328,8 @@ async function removeFav(dbId) {
 function renderFavorites() {
   const el = document.getElementById('fav-list');
   if (!el) return;
+  const countEl = document.getElementById('fav-count');
+  if (countEl) countEl.textContent = favorites.length ? `(${favorites.length})` : '';
   if (!favorites.length) {
     el.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">Aucun favori pour le moment.</p>';
     return;
