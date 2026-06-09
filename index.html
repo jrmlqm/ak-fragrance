@@ -308,27 +308,38 @@
 <div class="page" id="page-account">
   <div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:60px 20px">
     <!-- VUE CONNECTÉ -->
-    <div id="account-connected" style="display:none;width:100%;max-width:700px">
+    <div id="account-connected" style="display:none;width:100%;max-width:640px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brown-dark);margin-bottom:8px;text-align:center">Mon <em>Compte</em></div>
       <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:40px;text-align:center" id="account-email-display"></div>
 
-      <!-- INFOS -->
-      <div style="background:var(--cream);padding:28px 32px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-        <div>
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px">Connecté en tant que</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)" id="account-name-display"></div>
+      <!-- COORDONNÉES -->
+      <div style="background:var(--cream);padding:32px;margin-bottom:16px">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--brown-dark);margin-bottom:24px">Mes coordonnées</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:7px">Prénom</div>
+            <input type="text" id="acc-firstname" placeholder="Votre prénom" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
+          </div>
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:7px">Nom</div>
+            <input type="text" id="acc-lastname" placeholder="Votre nom" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
+          </div>
         </div>
-        <button class="btn-secondary" style="padding:10px 24px;font-size:9px" onclick="doLogout()">Se déconnecter</button>
-      </div>
-
-      <!-- FAVORIS -->
-      <div style="background:var(--cream);padding:28px 32px;margin-bottom:16px">
-        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--brown-dark);margin-bottom:20px;display:flex;align-items:center;gap:12px">
-          Mes Favoris
-          <span id="fav-count" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;color:var(--brown-light)"></span>
+        <div style="margin-bottom:14px">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:7px">Email</div>
+          <input type="email" id="acc-email" readonly style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none;opacity:.6">
         </div>
-        <div id="fav-list">
-          <p style="font-size:13px;color:var(--text-muted)">Aucun favori pour le moment.</p>
+        <div style="margin-bottom:14px">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:7px">Téléphone</div>
+          <input type="tel" id="acc-phone" placeholder="+33 6 00 00 00 00" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
+        </div>
+        <div style="margin-bottom:24px">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:7px">Adresse</div>
+          <input type="text" id="acc-address" placeholder="12 rue des Lilas, 75011 Paris" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="updateProfile()">Sauvegarder</button>
+          <button style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif" onclick="doLogout()">Se déconnecter</button>
         </div>
       </div>
     </div>
@@ -512,6 +523,20 @@
       <button class="btn-primary" style="width:100%;text-align:center" onclick="showPage('home')">Retour à la boutique</button>
     </div>
   </div>
+</div>
+
+
+<!-- PAGE FAVORIS -->
+<div class="page" id="page-favorites">
+  <section class="section">
+    <div class="section-header">
+      <div class="eyebrow">Mes coups de cœur</div>
+      <h2>Mes <em>Favoris</em></h2>
+    </div>
+    <div id="fav-list">
+      <p style="text-align:center;font-size:13px;color:var(--text-muted);padding:60px 0">Aucun favori pour le moment.</p>
+    </div>
+  </section>
 </div>
 
 <footer>
