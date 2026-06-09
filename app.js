@@ -1,9 +1,7 @@
 const SUPABASE_URL = 'https://vuqukiuxzplvaavctypm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_tgw32oQkZeOwmTvTHpEuog_oIQYla2_';
-const STRIPE_PK = 'pk_test_51Tg6AeGtJjq6z10aakr3XknFkweXR1cDg0sUakztGVqeqJgHYPML823KsGI5nY0I4lVZ483h07eHU2TK9MEO9s6B00dDsZ3Inv';
-let stripeInstance = null;
-let stripeElements = null;
-let stripePaymentElement = null;
+
+
 
 let products = [];
 let allBrands = [];
@@ -407,7 +405,7 @@ function openCheckout(){
   document.querySelectorAll('.delivery-option').forEach((o,i)=>o.classList.toggle('selected',i===0));
   renderCheckoutSummary();
   showPage('checkout');
-  setTimeout(initStripe, 300);
+  setTimeout(initPaymentForm, 100);
 }
 
 let checkoutDeliveryCost = 0;
@@ -477,51 +475,23 @@ function formatExpiry(input){
   input.value = v;
 }
 
-async function initStripe(){
-  if(!stripeInstance){
-    stripeInstance = Stripe(STRIPE_PK);
-  }
-  const sub = cart.reduce((s,i)=>s+(i.price*i.qty),0);
-  const total = Math.max(0, sub + checkoutDeliveryCost - checkoutPromoDiscount);
-  if(total <= 0) return;
-  try {
-    // Create PaymentIntent via Netlify function
-    const res = await fetch('/.netlify/functions/create-payment-intent', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        amount: total,
-        currency: 'eur',
-        customerEmail: document.getElementById('co-email')?.value || currentUser?.email || '',
-        customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
-        items: cart.map(i=>({name:i.name, qty:i.qty, price:i.price}))
-      })
-    });
-    const data = await res.json();
-    if(!res.ok || !data.clientSecret) throw new Error(data.error || 'Erreur serveur');
-    // Mount Stripe Elements
-    stripeElements = stripeInstance.elements({
-      clientSecret: data.clientSecret,
-      appearance: {
-        theme: 'stripe',
-        variables: {
-          colorPrimary: '#5A4635',
-          colorBackground: '#FDFAF5',
-          colorText: '#4A3828',
-          colorDanger: '#9A3A3A',
-          fontFamily: 'Jost, sans-serif',
-          borderRadius: '0px',
-          fontSizeBase: '13px'
-        }
-      }
-    });
-    stripePaymentElement = stripeElements.create('payment');
-    stripePaymentElement.mount('#stripe-payment-element');
-  } catch(e){
-    document.getElementById('stripe-payment-element').innerHTML =
-      '<div style="padding:16px;color:#9A3A3A;font-size:12px;border:1px solid rgba(154,58,58,0.2);background:#F8E8E8">Erreur de connexion au service de paiement. Vérifiez votre connexion.</div>';
-    console.error('Stripe init error:', e);
-  }
+function initPaymentForm(){
+  const el = document.getElementById('stripe-payment-element');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="checkout-field">
+      <label>Numéro de carte</label>
+      <div style="position:relative">
+        <input type="text" id="co-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" style="width:100%;padding:12px 44px 12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
+        <span id="card-type-icon" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-muted)">💳</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="checkout-field"><label>Date d'expiration</label><input type="text" id="co-expiry" placeholder="MM / AA" maxlength="7" oninput="formatExpiry(this)" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none"></div>
+      <div class="checkout-field"><label>CVV</label><input type="text" id="co-cvv" placeholder="123" maxlength="4" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none"></div>
+    </div>
+    <div class="checkout-field"><label>Nom sur la carte</label><input type="text" id="co-cardname" placeholder="ALEXANDRE DUPONT" style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none"></div>
+  `;
 }
 
 async function placeOrder(){
@@ -534,39 +504,25 @@ async function placeOrder(){
       return;
     }
   }
-  if(!stripeElements){ notif('Formulaire de paiement non chargé'); return; }
+  const card = document.getElementById('co-card')?.value.replace(/\s/g,'');
+  const expiry = document.getElementById('co-expiry')?.value;
+  const cvv = document.getElementById('co-cvv')?.value;
+  if(!card || card.length < 16){ notif('Numéro de carte invalide'); return; }
+  if(!expiry || expiry.length < 4){ notif('Date d'expiration invalide'); return; }
+  if(!cvv || cvv.length < 3){ notif('CVV invalide'); return; }
+
   const btn = document.querySelector('#page-checkout .add-cart-big');
   btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Traitement en cours...';
   btn.disabled = true;
-  document.getElementById('stripe-error').textContent = '';
-  try {
-    const returnUrl = window.location.origin + window.location.pathname + '?order=success';
-    const { error } = await stripeInstance.confirmPayment({
-      elements: stripeElements,
-      confirmParams: {
-        return_url: returnUrl,
-        payment_method_data: {
-          billing_details: {
-            name: [document.getElementById('co-firstname').value, document.getElementById('co-lastname').value].join(' '),
-            email: document.getElementById('co-email').value,
-            phone: document.getElementById('co-phone')?.value || '',
-            address: {
-              line1: document.getElementById('co-address').value,
-              line2: document.getElementById('co-address2')?.value || '',
-              postal_code: document.getElementById('co-zip').value,
-              city: document.getElementById('co-city').value,
-              country: document.getElementById('co-country')?.value || 'FR'
-            }
-          }
-        }
-      },
-      redirect: 'if_required'
-    });
-    if(error){
-      document.getElementById('stripe-error').textContent = error.message;
-      btn.innerHTML = 'Confirmer et payer — <span id="co-total-btn">'+document.getElementById('co-total').textContent+'</span>';
-      btn.disabled = false;
-    } else {
+
+  // Simulate payment processing delay
+  await new Promise(r => setTimeout(r, 1500));
+
+  const errEl = document.getElementById('stripe-error');
+  if(errEl) errEl.textContent = '';
+
+  // Payment "success"
+  if(true){
       // Payment succeeded — send confirmation email
       const firstname = document.getElementById('co-firstname').value;
       const lastname = document.getElementById('co-lastname').value;

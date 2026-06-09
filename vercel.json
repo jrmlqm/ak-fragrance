@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/.netlify/functions/create-payment-intent", "destination": "/api/create-payment-intent" },
+    { "source": "/.netlify/functions/send-confirmation", "destination": "/api/send-confirmation" }
+  ]
+}
