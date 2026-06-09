@@ -259,6 +259,11 @@ function updateAccountUI() {
     const name = [firstname, lastname].filter(Boolean).join(' ') || email.split('@')[0];
     if (document.getElementById('account-email-display')) document.getElementById('account-email-display').textContent = email;
     if (document.getElementById('account-name-display')) document.getElementById('account-name-display').textContent = name;
+    if (document.getElementById('acc-firstname')) document.getElementById('acc-firstname').value = firstname;
+    if (document.getElementById('acc-lastname')) document.getElementById('acc-lastname').value = currentUser.user_metadata?.lastname || '';
+    if (document.getElementById('acc-email')) document.getElementById('acc-email').value = email;
+    if (document.getElementById('acc-phone')) document.getElementById('acc-phone').value = currentUser.user_metadata?.phone || '';
+    if (document.getElementById('acc-address')) document.getElementById('acc-address').value = currentUser.user_metadata?.address || '';
     if (connected) connected.style.display = 'block';
     if (disconnected) disconnected.style.display = 'none';
   } else {
@@ -270,7 +275,11 @@ function updateAccountUI() {
 }
 
 function handleAccountClick() { if (currentUser) { showPage('account'); } else { openAuth('login'); } }
-function handleFavClick() { if (currentUser) { showPage('account'); } else { openAuth('login'); notif('Connectez-vous pour voir vos favoris'); } }
+function openFavProduct(productId) {
+  if (productId) openProduct(productId);
+}
+
+function handleFavClick() { if (currentUser) { showPage('favorites'); } else { openAuth('login'); notif('Connectez-vous pour voir vos favoris'); } }
 
 /* ── AUTH MODAL ── */
 function openAuth(tab = 'login') {
@@ -328,31 +337,29 @@ async function removeFav(dbId) {
 function renderFavorites() {
   const el = document.getElementById('fav-list');
   if (!el) return;
-  const countEl = document.getElementById('fav-count');
-  if (countEl) countEl.textContent = favorites.length ? `(${favorites.length})` : '';
   if (!favorites.length) {
-    el.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">Aucun favori pour le moment.</p>';
+    el.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--text-muted);padding:60px 0">Aucun favori pour le moment.</p>';
     return;
   }
-  el.innerHTML = favorites.map(f => `
-    <div class="fav-row">
-      <div style="display:flex;align-items:center;gap:12px">
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(138,110,88,0.1)">` +
+    favorites.map(f => `
+    <div style="background:var(--beige-light);cursor:pointer;position:relative" onclick="openFavProduct(${f.productId})">
+      <div style="aspect-ratio:3/4;overflow:hidden;position:relative">
         ${f.imageUrl
-          ? `<img src="${f.imageUrl}" style="width:40px;height:52px;object-fit:cover;border-radius:2px">`
-          : `<div style="width:40px;height:52px;border-radius:2px;background:${swatchBgs[f.img] || swatchBgs.p1}"></div>`}
-        <div><div class="fav-name">${f.name}</div><div class="fav-price">${f.price} €</div></div>
+          ? `<img src="${f.imageUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover">`
+          : `<div style="width:100%;height:100%;background:${swatchBgs[f.img] || swatchBgs.p1}"></div>`}
+        <button onclick="event.stopPropagation();removeFav(${f.dbId})"
+          style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;cursor:pointer;font-size:12px;color:var(--brown-dark);display:flex;align-items:center;justify-content:center">✕</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn-secondary" style="padding:8px 16px;font-size:9px"
-          onclick="addToCartDirect('${f.name}','',${f.price},${f.productId},'${f.img}','${f.imageUrl}')">
+      <div style="padding:16px">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">${f.brand||''}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--brown-dark);margin-bottom:6px">${f.name}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--brown-dark);margin-bottom:12px">${f.price} €</div>
+        <button class="btn-cart" onclick="event.stopPropagation();addToCartDirect('${f.name}','${f.brand||''}',${f.price},${f.productId},'${f.img}','${f.imageUrl}')">
           Ajouter au panier
         </button>
-        <button style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted)"
-          onmouseover="this.style.color='var(--brown-dark)'"
-          onmouseout="this.style.color='var(--text-muted)'"
-          onclick="removeFav(${f.dbId})">✕</button>
       </div>
-    </div>`).join('');
+    </div>`).join('') + `</div>`;
 }
 
 /* ══════════════════════════════
