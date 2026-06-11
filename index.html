@@ -273,10 +273,10 @@
       </div>
     </div>
     <div>
-      <div class="form-group"><label>Nom complet</label><input type="text" placeholder="Votre nom"></div>
-      <div class="form-group"><label>Email</label><input type="email" placeholder="votre@email.fr"></div>
-      <div class="form-group"><label>Message</label><textarea placeholder="Votre message..."></textarea></div>
-      <button class="btn-secondary" style="width:100%;padding:16px" onclick="notif('Message envoyé — nous vous répondrons sous 24h')">Envoyer le message</button>
+      <div class="form-group"><label>Nom complet</label><input type="text" id="contact-name" placeholder="Votre nom"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="contact-email" placeholder="votre@email.fr"></div>
+      <div class="form-group"><label>Message</label><textarea id="contact-message" placeholder="Votre message..."></textarea></div>
+      <button class="btn-secondary" id="contact-btn" style="width:100%;padding:16px" onclick="sendContactMessage()">Envoyer le message</button>
     </div>
   </div>
 </div>

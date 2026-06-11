@@ -993,6 +993,40 @@ async function sendConfirmationEmail() {
 }
 
 /* ══════════════════════════════
+   CONTACT
+══════════════════════════════ */
+async function sendContactMessage() {
+  const name = document.getElementById('contact-name')?.value.trim();
+  const email = document.getElementById('contact-email')?.value.trim();
+  const message = document.getElementById('contact-message')?.value.trim();
+
+  if (!name || !email || !message) { notif('Veuillez remplir tous les champs'); return; }
+  if (!email.includes('@')) { notif('Email invalide'); return; }
+
+  const btn = document.getElementById('contact-btn');
+  btn.textContent = 'Envoi en cours...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, message })
+    });
+    if (!res.ok) throw new Error('Erreur serveur');
+    notif('Message envoyé — nous vous répondrons sous 24h ✓');
+    document.getElementById('contact-name').value = '';
+    document.getElementById('contact-email').value = '';
+    document.getElementById('contact-message').value = '';
+  } catch (e) {
+    notif('Erreur lors de l\'envoi — contactez-nous directement par email');
+  } finally {
+    btn.textContent = 'Envoyer le message';
+    btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════
    PROFIL
 ══════════════════════════════ */
 async function updateProfile() {
