@@ -9,6 +9,8 @@ let currentUser = null;
 let accessToken = null;
 let stripeInstance = null;
 let stripeElements = null;
+let currentClientSecret = null;
+let currentPaymentIntentId = null;
 
 /* ══════════════════════════════
    SUPABASE HELPERS
@@ -499,6 +501,8 @@ function openCheckout() {
   document.getElementById('co-promo').value = '';
   document.querySelectorAll('.delivery-option').forEach((o, i) => o.classList.toggle('selected', i === 0));
   stripeElements = null;
+  currentClientSecret = null;
+  currentPaymentIntentId = null;
   const stripeEl = document.getElementById('stripe-payment-element');
   if (stripeEl) stripeEl.innerHTML = '';
   renderCheckoutSummary();
@@ -578,50 +582,66 @@ async function initPaymentForm() {
 
   if (!stripeInstance) stripeInstance = Stripe('pk_test_51Tg6AeGtJjq6z10aakr3XknFkweXR1cDg0sUakztGVqeqJgHYPML823KsGI5nY0I4lVZ483h07eHU2TK9MEO9s6B00dDsZ3Inv');
 
-  const appearance = {
-    theme: 'stripe',
-    variables: {
-      colorPrimary: '#5A4635',
-      colorBackground: '#FDFAF5',
-      colorText: '#4A3828',
-      colorTextSecondary: '#9A8878',
-      colorDanger: '#9A3A3A',
-      fontFamily: '"Jost", sans-serif',
-      borderRadius: '0px',
-      spacingUnit: '5px',
-      fontSizeBase: '13px'
-    },
-    rules: {
-      '.Input': { border: '1px solid rgba(138,110,88,0.2)', boxShadow: 'none', padding: '12px 14px' },
-      '.Input:focus': { border: '1px solid #8A6E58', boxShadow: 'none' },
-      '.Label': { fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#B09A88' }
-    }
-  };
+  try {
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: calculateCheckoutTotal(),
+        currency: 'eur',
+        customerEmail: document.getElementById('co-email')?.value || '',
+        customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
+        items: cart.map(i => ({ name: i.name, qty: i.qty }))
+      })
+    });
+    const { clientSecret, paymentIntentId, error: apiError } = await res.json();
+    if (apiError) throw new Error(apiError);
 
-  stripeElements = stripeInstance.elements({
-    mode: 'payment',
-    amount: Math.round(calculateCheckoutTotal() * 100),
-    currency: 'eur',
-    appearance
-  });
+    currentClientSecret = clientSecret;
+    currentPaymentIntentId = paymentIntentId;
 
-  const paymentElement = stripeElements.create('payment', {
-    layout: 'accordion',
-    defaultValues: {
-      billingDetails: {
-        email: document.getElementById('co-email')?.value || '',
-        name: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' ')
+    const appearance = {
+      theme: 'stripe',
+      variables: {
+        colorPrimary: '#5A4635',
+        colorBackground: '#FDFAF5',
+        colorText: '#4A3828',
+        colorTextSecondary: '#9A8878',
+        colorDanger: '#9A3A3A',
+        fontFamily: '"Jost", sans-serif',
+        borderRadius: '0px',
+        spacingUnit: '5px',
+        fontSizeBase: '13px'
+      },
+      rules: {
+        '.Input': { border: '1px solid rgba(138,110,88,0.2)', boxShadow: 'none', padding: '12px 14px' },
+        '.Input:focus': { border: '1px solid #8A6E58', boxShadow: 'none' },
+        '.Label': { fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#B09A88' }
       }
-    }
-  });
+    };
 
-  el.innerHTML = '';
-  paymentElement.mount(el);
+    stripeElements = stripeInstance.elements({ clientSecret, appearance });
+    const paymentElement = stripeElements.create('payment', { layout: 'accordion' });
+    el.innerHTML = '';
+    paymentElement.mount(el);
+
+  } catch (e) {
+    el.innerHTML = `<div style="color:#9A3A3A;font-size:12px;padding:12px">${e.message}</div>`;
+  }
 }
 
-function updateStripeAmount() {
-  if (!stripeElements) return;
-  stripeElements.update({ amount: Math.round(calculateCheckoutTotal() * 100) });
+async function updateStripeAmount() {
+  if (!currentPaymentIntentId) return;
+  try {
+    await fetch('/api/update-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentIntentId: currentPaymentIntentId, amount: calculateCheckoutTotal() })
+    });
+    if (stripeElements) await stripeElements.fetchUpdates();
+  } catch (e) {
+    console.error('updateStripeAmount:', e);
+  }
 }
 
 async function placeOrder() {
@@ -635,7 +655,7 @@ async function placeOrder() {
     }
   }
 
-  if (!stripeElements) { notif('Le formulaire de paiement n\'est pas prêt'); return; }
+  if (!stripeElements || !currentClientSecret) { notif('Le formulaire de paiement n\'est pas prêt'); return; }
 
   const errEl = document.getElementById('stripe-error');
   errEl.textContent = '';
@@ -646,31 +666,8 @@ async function placeOrder() {
   btn.disabled = true;
 
   try {
-    const { error: submitError } = await stripeElements.submit();
-    if (submitError) {
-      errEl.textContent = submitError.message;
-      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
-      btn.disabled = false;
-      return;
-    }
-
-    const res = await fetch('/api/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: total,
-        currency: 'eur',
-        customerEmail: document.getElementById('co-email').value,
-        customerName: [document.getElementById('co-firstname').value, document.getElementById('co-lastname').value].filter(Boolean).join(' '),
-        items: cart.map(i => ({ name: i.name, qty: i.qty }))
-      })
-    });
-    const { clientSecret, paymentIntentId, error: apiError } = await res.json();
-    if (apiError) throw new Error(apiError);
-
     const { error } = await stripeInstance.confirmPayment({
       elements: stripeElements,
-      clientSecret,
       confirmParams: { return_url: window.location.origin },
       redirect: 'if_required'
     });
@@ -682,11 +679,9 @@ async function placeOrder() {
       return;
     }
 
-    // Paiement confirmé — sauvegarder la commande et envoyer l'email
-    await saveOrder(paymentIntentId);
+    await saveOrder(currentPaymentIntentId);
     sendConfirmationEmail().catch(e => console.error('email:', e));
 
-    // Vider le panier
     if (currentUser && accessToken) {
       for (const item of cart) {
         if (item.dbId) try { await sbDelete('cart_items?id=eq.' + item.dbId, accessToken); } catch (e) {}
