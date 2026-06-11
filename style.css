@@ -258,8 +258,27 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
 .loading-logo em{font-style:italic}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+/* ── MENU MOBILE ── */
+.mobile-menu-btn{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;width:40px;height:40px;border-radius:50%;transition:background .25s}
+.mobile-menu-btn:hover{background:rgba(138,110,88,0.1)}
+.mobile-menu-btn span{display:block;width:20px;height:1.5px;background:var(--text-muted);transition:all .3s;transform-origin:center}
+.mobile-menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.mobile-menu-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.mobile-menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.mobile-nav{position:fixed;inset:0;background:rgba(74,56,40,0.55);z-index:400;opacity:0;pointer-events:none;transition:opacity .3s}
+.mobile-nav.open{opacity:1;pointer-events:all}
+.mobile-nav-inner{position:absolute;top:0;right:0;width:300px;max-width:88vw;height:100%;background:var(--beige-light);padding:28px 36px 40px;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.23,1,.32,1)}
+.mobile-nav.open .mobile-nav-inner{transform:translateX(0)}
+.mobile-nav-close{background:none;border:1px solid rgba(138,110,88,0.2);width:32px;height:32px;cursor:pointer;font-size:14px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0}
+.mobile-nav-close:hover{background:var(--brown-dark);color:white;border-color:var(--brown-dark)}
+.mobile-nav-links{display:flex;flex-direction:column;flex:1}
+.mobile-nav-links a{display:block;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:18px 0;border-bottom:1px solid rgba(138,110,88,0.1);cursor:pointer;transition:color .25s}
+.mobile-nav-links a:hover{color:var(--brown-dark)}
+.mobile-nav-bottom{padding-top:28px;border-top:1px solid rgba(138,110,88,0.1)}
+
 @media(max-width:900px){
-  header{padding:0 20px}nav{display:none}.hero h1{font-size:48px}.section{padding:50px 20px}
+  header{padding:0 20px}nav{display:none}.mobile-menu-btn{display:flex}
+  .hero h1{font-size:48px}.section{padding:50px 20px}
   .cats{grid-template-columns:repeat(3,1fr)}.products-grid,.products-grid-shop{grid-template-columns:repeat(2,1fr)}
   .brands-grid,.brands-full-grid{grid-template-columns:repeat(2,1fr)}footer{grid-template-columns:1fr 1fr;padding:40px 20px}
   .footer-bottom{padding:16px 20px}.shop-layout{grid-template-columns:1fr}.filters{display:none}

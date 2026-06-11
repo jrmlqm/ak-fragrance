@@ -94,8 +94,33 @@
       <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span class="cart-badge" id="cart-count">0</span>
     </button>
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- MENU MOBILE -->
+<div class="mobile-nav" id="mobile-nav" onclick="closeMobileIfOutside(event)">
+  <div class="mobile-nav-inner">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:40px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:5px;color:var(--brown-dark);text-transform:uppercase">AK <em>Fragrance</em></div>
+      <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a onclick="showPage('home')">Accueil</a>
+      <a onclick="showPage('shop')">Boutique</a>
+      <a onclick="showPage('brands')">Marques</a>
+      <a onclick="showPage('nouveautes')">Nouveautés</a>
+      <a onclick="showPage('histoire')">Notre Histoire</a>
+      <a onclick="showPage('contact')">Contact</a>
+    </nav>
+    <div class="mobile-nav-bottom">
+      <a onclick="showPage('cgv')" style="font-size:9px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;cursor:pointer;display:block;margin-bottom:8px">CGV</a>
+      <a onclick="showPage('mentions')" style="font-size:9px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;cursor:pointer;display:block">Mentions légales</a>
+    </div>
+  </div>
+</div>
 
 <!-- PAGE ACCUEIL -->
 <div class="page active" id="page-home">

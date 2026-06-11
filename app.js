@@ -895,6 +895,7 @@ document.addEventListener('keydown', e => {
    NAVIGATION
 ══════════════════════════════ */
 function showPage(name) {
+  closeMobileMenu();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
   const p = document.getElementById('page-' + name);
@@ -902,6 +903,28 @@ function showPage(name) {
   const n = document.getElementById('nav-' + name);
   if (n) n.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleMobileMenu() {
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.getElementById('mobile-menu-btn');
+  const isOpen = nav.classList.contains('open');
+  nav.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+
+function closeMobileMenu() {
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.getElementById('mobile-menu-btn');
+  if (!nav) return;
+  nav.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeMobileIfOutside(e) {
+  if (e.target === document.getElementById('mobile-nav')) closeMobileMenu();
 }
 
 function switchTab(btn, tabId) {
