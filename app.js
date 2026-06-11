@@ -166,9 +166,57 @@ async function loadUserData() {
     updateCartBadge();
     renderCart();
     renderFavorites();
+    loadOrders();
   } catch (e) {
     console.error('loadUserData:', e);
   }
+}
+
+async function loadOrders() {
+  if (!currentUser || !accessToken) return;
+  try {
+    const orders = await sbGet(`orders?user_id=eq.${currentUser.id}&order=created_at.desc`, accessToken);
+    renderOrders(orders);
+  } catch (e) {
+    console.error('loadOrders:', e);
+  }
+}
+
+function renderOrders(orders) {
+  const el = document.getElementById('orders-list');
+  if (!el) return;
+  if (!orders || !orders.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:8px 0">Aucune commande pour le moment.</p>';
+    return;
+  }
+
+  const statusLabel = { confirmed:'Confirmée', shipped:'Expédiée', delivered:'Livrée', cancelled:'Annulée' };
+  const statusColor = { confirmed:'#4A7A4A', shipped:'#8A6E58', delivered:'#4A7A4A', cancelled:'#9A3A3A' };
+  const deliveryLabel = { standard:'Colissimo Standard', express:'Chronopost Express', relay:'Point Relais' };
+
+  el.innerHTML = orders.map(order => {
+    const date = new Date(order.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+    const ref = (order.stripe_payment_intent_id || order.id || '').slice(-8).toUpperCase();
+    const items = Array.isArray(order.items) ? order.items : [];
+    const status = order.status || 'confirmed';
+
+    return `<div style="padding:20px 0;border-bottom:1px solid rgba(138,110,88,0.12)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">${date}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--brown-dark)">Commande #${ref}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border:1px solid ${statusColor[status]||'#8A6E58'};color:${statusColor[status]||'#8A6E58'}">${statusLabel[status]||status}</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)">${order.total} €</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        ${items.map(i => `<span style="font-size:10px;color:var(--text-muted);padding:4px 10px;background:var(--beige-light);letter-spacing:0.5px">${i.name} ×${i.qty}</span>`).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--brown-light);letter-spacing:1px">${deliveryLabel[order.delivery_type]||'Livraison standard'}${order.address ? ' · '+order.address : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════
@@ -902,6 +950,7 @@ function showPage(name) {
   if (p) p.classList.add('active');
   const n = document.getElementById('nav-' + name);
   if (n) n.classList.add('active');
+  if (name === 'account') loadOrders();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

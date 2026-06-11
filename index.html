@@ -331,9 +331,9 @@
 
 <!-- PAGE COMPTE -->
 <div class="page" id="page-account">
-  <div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:60px 20px">
+  <div style="padding:60px 20px">
     <!-- VUE CONNECTÉ -->
-    <div id="account-connected" style="display:none;width:100%;max-width:640px">
+    <div id="account-connected" style="display:none;width:100%;max-width:800px;margin:0 auto">
       <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brown-dark);margin-bottom:8px;text-align:center">Mon <em>Compte</em></div>
       <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:40px;text-align:center" id="account-email-display"></div>
 
@@ -366,6 +366,12 @@
           <button class="btn-secondary" onclick="updateProfile()">Sauvegarder</button>
           <button style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif" onclick="doLogout()">Se déconnecter</button>
         </div>
+      </div>
+
+      <!-- HISTORIQUE COMMANDES -->
+      <div style="background:var(--cream);padding:32px">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--brown-dark);margin-bottom:24px">Mes commandes</div>
+        <div id="orders-list"></div>
       </div>
     </div>
     <!-- VUE DÉCONNECTÉ : géré par auth modal -->
