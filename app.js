@@ -646,6 +646,14 @@ async function placeOrder() {
   btn.disabled = true;
 
   try {
+    const { error: submitError } = await stripeElements.submit();
+    if (submitError) {
+      errEl.textContent = submitError.message;
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
+      btn.disabled = false;
+      return;
+    }
+
     const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
