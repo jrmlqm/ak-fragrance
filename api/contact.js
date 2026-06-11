@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
 </html>`;
 
     const payload = JSON.stringify({
-      from: 'AK Fragrance <onboarding@resend.dev>',
+      from: 'AK Fragrance <contact@ak-fragrance.com>',
       to: [process.env.CONTACT_EMAIL || 'akfragrance75@gmail.com'],
       reply_to: email,
       subject: `Message de ${name} — AK Fragrance`,

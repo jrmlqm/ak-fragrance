@@ -82,7 +82,7 @@ module.exports = async function handler(req, res) {
 </html>`;
 
     const resendPayload = JSON.stringify({
-      from: 'AK Fragrance <onboarding@resend.dev>',
+      from: 'AK Fragrance <contact@ak-fragrance.com>',
       to: [customerEmail],
       subject: '✓ Commande confirmée — AK Fragrance',
       html: emailHTML
