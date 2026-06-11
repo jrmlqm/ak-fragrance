@@ -7,6 +7,8 @@ let cart = [];
 let favorites = [];
 let currentUser = null;
 let accessToken = null;
+let stripeInstance = null;
+let stripeElements = null;
 
 /* ══════════════════════════════
    SUPABASE HELPERS
@@ -496,6 +498,9 @@ function openCheckout() {
   document.getElementById('co-promo-line').style.display = 'none';
   document.getElementById('co-promo').value = '';
   document.querySelectorAll('.delivery-option').forEach((o, i) => o.classList.toggle('selected', i === 0));
+  stripeElements = null;
+  const stripeEl = document.getElementById('stripe-payment-element');
+  if (stripeEl) stripeEl.innerHTML = '';
   renderCheckoutSummary();
   showPage('checkout');
   setTimeout(initPaymentForm, 100);
@@ -509,6 +514,7 @@ function selectDelivery(el, type, cost) {
   el.classList.add('selected');
   checkoutDeliveryCost = cost;
   renderCheckoutSummary();
+  updateStripeAmount();
 }
 
 function applyCheckoutPromo() {
@@ -532,11 +538,17 @@ function applyCheckoutPromo() {
     document.getElementById('co-promo-line').style.display = 'none';
   }
   renderCheckoutSummary();
+  updateStripeAmount();
+}
+
+function calculateCheckoutTotal() {
+  const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+  return Math.max(0, sub + checkoutDeliveryCost - checkoutPromoDiscount);
 }
 
 function renderCheckoutSummary() {
   const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-  const total = Math.max(0, sub + checkoutDeliveryCost - checkoutPromoDiscount);
+  const total = calculateCheckoutTotal();
   document.getElementById('co-subtotal').textContent = sub + ' €';
   document.getElementById('co-delivery-line').textContent = checkoutDeliveryCost === 0 ? 'Offerte' : checkoutDeliveryCost.toFixed(2) + ' €';
   document.getElementById('co-promo-amount').textContent = '-' + checkoutPromoDiscount + ' €';
@@ -557,54 +569,59 @@ function renderCheckoutSummary() {
     </div>`).join('');
 }
 
-/* ── FORMULAIRE DE PAIEMENT ── */
-function initPaymentForm() {
+/* ── FORMULAIRE DE PAIEMENT (STRIPE) ── */
+async function initPaymentForm() {
   const el = document.getElementById('stripe-payment-element');
   if (!el) return;
-  el.innerHTML = `
-    <div class="checkout-field">
-      <label>Numéro de carte</label>
-      <div style="position:relative">
-        <input type="text" id="co-card" placeholder="1234 5678 9012 3456" maxlength="19"
-          oninput="formatCard(this)"
-          style="width:100%;padding:12px 44px 12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
-        <span id="card-type-icon" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-muted)">💳</span>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="checkout-field">
-        <label>Date d'expiration</label>
-        <input type="text" id="co-expiry" placeholder="MM / AA" maxlength="7"
-          oninput="formatExpiry(this)"
-          style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
-      </div>
-      <div class="checkout-field">
-        <label>CVV</label>
-        <input type="text" id="co-cvv" placeholder="123" maxlength="4"
-          style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
-      </div>
-    </div>
-    <div class="checkout-field">
-      <label>Nom sur la carte</label>
-      <input type="text" id="co-cardname" placeholder="ALEXANDRE DUPONT"
-        style="width:100%;padding:12px 14px;border:1px solid rgba(138,110,88,0.2);background:var(--beige-light);font-family:'Jost',sans-serif;font-size:13px;color:var(--text);outline:none">
-    </div>`;
+
+  el.innerHTML = '<div style="padding:20px;text-align:center;font-size:10px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase">Chargement du formulaire...</div>';
+
+  if (!stripeInstance) stripeInstance = Stripe('pk_test_51Tg6AeGtJjq6z10aakr3XknFkweXR1cDg0sUakztGVqeqJgHYPML823KsGI5nY0I4lVZ483h07eHU2TK9MEO9s6B00dDsZ3Inv');
+
+  const appearance = {
+    theme: 'stripe',
+    variables: {
+      colorPrimary: '#5A4635',
+      colorBackground: '#FDFAF5',
+      colorText: '#4A3828',
+      colorTextSecondary: '#9A8878',
+      colorDanger: '#9A3A3A',
+      fontFamily: '"Jost", sans-serif',
+      borderRadius: '0px',
+      spacingUnit: '5px',
+      fontSizeBase: '13px'
+    },
+    rules: {
+      '.Input': { border: '1px solid rgba(138,110,88,0.2)', boxShadow: 'none', padding: '12px 14px' },
+      '.Input:focus': { border: '1px solid #8A6E58', boxShadow: 'none' },
+      '.Label': { fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#B09A88' }
+    }
+  };
+
+  stripeElements = stripeInstance.elements({
+    mode: 'payment',
+    amount: Math.round(calculateCheckoutTotal() * 100),
+    currency: 'eur',
+    appearance
+  });
+
+  const paymentElement = stripeElements.create('payment', {
+    layout: 'accordion',
+    defaultValues: {
+      billingDetails: {
+        email: document.getElementById('co-email')?.value || '',
+        name: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' ')
+      }
+    }
+  });
+
+  el.innerHTML = '';
+  paymentElement.mount(el);
 }
 
-function formatCard(input) {
-  let v = input.value.replace(/\D/g, '').substring(0, 16);
-  input.value = v.replace(/(.{4})/g, '$1 ').trim();
-  const icon = document.getElementById('card-type-icon');
-  if (v.startsWith('4')) icon.textContent = 'Visa';
-  else if (v.startsWith('5')) icon.textContent = 'MC';
-  else if (v.startsWith('3')) icon.textContent = 'Amex';
-  else icon.textContent = '💳';
-}
-
-function formatExpiry(input) {
-  let v = input.value.replace(/\D/g, '').substring(0, 4);
-  if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
-  input.value = v;
+function updateStripeAmount() {
+  if (!stripeElements) return;
+  stripeElements.update({ amount: Math.round(calculateCheckoutTotal() * 100) });
 }
 
 async function placeOrder() {
@@ -618,33 +635,65 @@ async function placeOrder() {
     }
   }
 
-  const card = document.getElementById('co-card')?.value.replace(/\s/g, '');
-  const expiry = document.getElementById('co-expiry')?.value;
-  const cvv = document.getElementById('co-cvv')?.value;
+  if (!stripeElements) { notif('Le formulaire de paiement n\'est pas prêt'); return; }
 
-  if (!card || card.length < 16) { notif('Numéro de carte invalide'); return; }
-  if (!expiry || expiry.length < 4) { notif("Date d'expiration invalide"); return; }
-  if (!cvv || cvv.length < 3) { notif('CVV invalide'); return; }
+  const errEl = document.getElementById('stripe-error');
+  errEl.textContent = '';
 
   const btn = document.querySelector('#page-checkout .add-cart-big');
+  const total = calculateCheckoutTotal();
   btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Traitement en cours...';
   btn.disabled = true;
 
-  await new Promise(r => setTimeout(r, 1800));
+  try {
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: total,
+        currency: 'eur',
+        customerEmail: document.getElementById('co-email').value,
+        customerName: [document.getElementById('co-firstname').value, document.getElementById('co-lastname').value].filter(Boolean).join(' '),
+        items: cart.map(i => ({ name: i.name, qty: i.qty }))
+      })
+    });
+    const { clientSecret, paymentIntentId, error: apiError } = await res.json();
+    if (apiError) throw new Error(apiError);
 
-  // Vider le panier
-  if (currentUser && accessToken) {
-    try {
+    const { error } = await stripeInstance.confirmPayment({
+      elements: stripeElements,
+      clientSecret,
+      confirmParams: { return_url: window.location.origin },
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      errEl.textContent = error.message;
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
+      btn.disabled = false;
+      return;
+    }
+
+    // Paiement confirmé — sauvegarder la commande et envoyer l'email
+    await saveOrder(paymentIntentId);
+    sendConfirmationEmail().catch(e => console.error('email:', e));
+
+    // Vider le panier
+    if (currentUser && accessToken) {
       for (const item of cart) {
-        if (item.dbId) await sbDelete('cart_items?id=eq.' + item.dbId, accessToken);
+        if (item.dbId) try { await sbDelete('cart_items?id=eq.' + item.dbId, accessToken); } catch (e) {}
       }
-    } catch (e) {}
-  }
+    }
+    cart = [];
+    updateCartBadge();
+    renderCart();
+    showPage('confirmation');
 
-  cart = [];
-  updateCartBadge();
-  renderCart();
-  showPage('confirmation');
+  } catch (e) {
+    errEl.textContent = e.message;
+    btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
+    btn.disabled = false;
+  }
 }
 
 /* ══════════════════════════════
@@ -885,6 +934,87 @@ function notif(msg) {
   el.classList.add('show');
   clearTimeout(notifTimer);
   notifTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+/* ══════════════════════════════
+   COMMANDES
+══════════════════════════════ */
+async function saveOrder(paymentIntentId) {
+  if (!currentUser || !accessToken) return;
+  const address = [
+    document.getElementById('co-address')?.value,
+    document.getElementById('co-address2')?.value,
+    document.getElementById('co-zip')?.value,
+    document.getElementById('co-city')?.value
+  ].filter(Boolean).join(', ');
+  try {
+    await sbPost('orders', {
+      user_id: currentUser.id,
+      customer_name: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
+      customer_email: document.getElementById('co-email')?.value,
+      customer_phone: document.getElementById('co-phone')?.value || null,
+      address,
+      delivery_type: document.querySelector('input[name="delivery"]:checked')?.value || 'standard',
+      delivery_cost: checkoutDeliveryCost,
+      items: cart.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
+      subtotal: cart.reduce((s, i) => s + (i.price * i.qty), 0),
+      promo_discount: checkoutPromoDiscount,
+      total: calculateCheckoutTotal(),
+      stripe_payment_intent_id: paymentIntentId,
+      status: 'confirmed'
+    }, accessToken);
+  } catch (e) {
+    console.error('saveOrder:', e);
+  }
+}
+
+async function sendConfirmationEmail() {
+  const address = [
+    document.getElementById('co-address')?.value,
+    document.getElementById('co-address2')?.value,
+    document.getElementById('co-zip')?.value,
+    document.getElementById('co-city')?.value
+  ].filter(Boolean).join(', ');
+  await fetch('/api/send-confirmation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerEmail: document.getElementById('co-email')?.value,
+      customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
+      items: cart.map(i => ({ name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
+      total: calculateCheckoutTotal(),
+      deliveryType: document.querySelector('input[name="delivery"]:checked')?.value || 'standard',
+      address
+    })
+  });
+}
+
+/* ══════════════════════════════
+   PROFIL
+══════════════════════════════ */
+async function updateProfile() {
+  if (!currentUser || !accessToken) return;
+  const firstname = document.getElementById('acc-firstname')?.value.trim();
+  const lastname = document.getElementById('acc-lastname')?.value.trim();
+  const phone = document.getElementById('acc-phone')?.value.trim();
+  const address = document.getElementById('acc-address')?.value.trim();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ data: { firstname, lastname, phone, address } })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    currentUser = data;
+    notif('Profil mis à jour ✓');
+  } catch (e) {
+    notif('Erreur : ' + e.message);
+  }
 }
 
 /* ══════════════════════════════

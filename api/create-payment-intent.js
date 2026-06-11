@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
       metadata: { customer_name: customerName || '', items_summary: items?.map(i => `${i.name} x${i.qty}`).join(', ').substring(0, 500) || '' },
       automatic_payment_methods: { enabled: true },
     });
-    return res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    return res.status(200).json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (err) {
     console.error('Stripe error:', err);
     return res.status(500).json({ error: err.message });
