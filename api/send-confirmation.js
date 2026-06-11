@@ -70,7 +70,7 @@ module.exports = async function handler(req, res) {
         <tr>
           <td style="background:#5A4635;padding:32px 40px;text-align:center">
             <div style="font-size:11px;color:rgba(240,230,211,0.6);line-height:1.8">
-              Des questions ? <a href="mailto:contact@akfragrance.fr" style="color:#F0E6D3">contact@akfragrance.fr</a><br>
+              Des questions ? <a href="mailto:akfragrance75@gmail.com" style="color:#F0E6D3">akfragrance75@gmail.com</a><br>
               © 2025 AK Fragrance — Île-de-France
             </div>
           </td>
