@@ -7,8 +7,9 @@ body{font-family:'Jost',sans-serif;background:var(--beige-light);color:var(--tex
 .ticker-inner span{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:300;flex-shrink:0;white-space:nowrap}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 header{background:var(--beige-light);padding:0 60px;display:flex;align-items:center;justify-content:space-between;height:80px;border-bottom:1px solid rgba(138,110,88,0.18);position:sticky;top:0;z-index:100}
-.logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:10px;color:var(--brown-dark);text-transform:uppercase;cursor:pointer;white-space:nowrap;user-select:none}
+.logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:10px;color:var(--brown-dark);text-transform:uppercase;cursor:pointer;white-space:nowrap;user-select:none;display:flex;align-items:center;gap:10px}
 .logo em{font-style:italic;letter-spacing:8px}
+.logo-bottle{height:62px;width:auto;object-fit:contain;mix-blend-mode:multiply;filter:brightness(1.8) contrast(1.4);flex-shrink:0}
 nav{display:flex;gap:36px;align-items:center}
 nav a{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;transition:color .3s;cursor:pointer;font-weight:400}
 nav a:hover,nav a.active{color:var(--brown-dark)}
@@ -297,6 +298,7 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .mobile-menu-btn{display:flex}
   .logo{font-size:22px;letter-spacing:7px}
   .logo em{letter-spacing:6px}
+  .logo-bottle{height:50px}
   .hero h1{font-size:clamp(36px,7vw,64px)}
   .section{padding:56px 24px}
   .brands-section{padding:50px 24px}
@@ -375,6 +377,7 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   header{padding:0 12px}
   .logo{font-size:18px;letter-spacing:5px}
   .logo em{letter-spacing:4px}
+  .logo-bottle{height:42px}
   .hero h1{font-size:clamp(24px,9vw,36px)}
   .section{padding:36px 12px}
   .brands-section{padding:32px 12px}
