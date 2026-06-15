@@ -7,11 +7,11 @@ body{font-family:'Jost',sans-serif;background:var(--beige-light);color:var(--tex
 .ticker-inner span{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:300;flex-shrink:0;white-space:nowrap}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 header{background:var(--beige-light);padding:0 60px;display:flex;align-items:center;justify-content:space-between;height:80px;border-bottom:1px solid rgba(138,110,88,0.18);position:sticky;top:0;z-index:100}
-.logo{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;color:var(--brown-dark);gap:2px;padding:4px 0;text-decoration:none}
-.logo-main{display:flex;align-items:flex-end;gap:3px}
-.logo-a,.logo-k{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;text-transform:uppercase;line-height:1;color:var(--brown-dark)}
-.logo-bottle-svg{height:46px;width:auto;color:var(--brown-dark);margin-bottom:1px}
-.logo-fragrance{font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:300;letter-spacing:10px;text-transform:uppercase;color:var(--brown-dark)}
+.logo{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;color:var(--brown-dark);gap:1px;padding:2px 0;text-decoration:none}
+.logo-lockup{display:flex;flex-direction:column;align-items:center}
+.logo-bottle-svg{height:30px;width:auto;color:var(--brown-dark);margin-bottom:-6px;position:relative;z-index:2}
+.logo-ak-row{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:18px;text-transform:uppercase;line-height:1;color:var(--brown-dark);position:relative;z-index:1}
+.logo-fragrance{font-family:'Cormorant Garamond',serif;font-size:10px;font-weight:300;letter-spacing:9px;text-transform:uppercase;color:var(--brown-dark);margin-top:1px}
 nav{display:flex;gap:36px;align-items:center}
 nav a{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;transition:color .3s;cursor:pointer;font-weight:400}
 nav a:hover,nav a.active{color:var(--brown-dark)}
@@ -298,8 +298,8 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   header{padding:0 20px}
   nav{display:none}
   .mobile-menu-btn{display:flex}
-  .logo-a,.logo-k{font-size:34px}
-  .logo-bottle-svg{height:36px}
+  .logo-ak-row{font-size:26px;letter-spacing:14px}
+  .logo-bottle-svg{height:24px;margin-bottom:-5px}
   .logo-fragrance{font-size:9px;letter-spacing:7px}
   .hero h1{font-size:clamp(36px,7vw,64px)}
   .section{padding:56px 24px}
@@ -377,8 +377,8 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
 /* ── PETIT MOBILE ── */
 @media(max-width:400px){
   header{padding:0 12px}
-  .logo-a,.logo-k{font-size:26px}
-  .logo-bottle-svg{height:28px}
+  .logo-ak-row{font-size:20px;letter-spacing:10px}
+  .logo-bottle-svg{height:18px;margin-bottom:-4px}
   .logo-fragrance{font-size:7.5px;letter-spacing:5px}
   .hero h1{font-size:clamp(24px,9vw,36px)}
   .section{padding:36px 12px}
