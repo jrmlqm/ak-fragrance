@@ -981,7 +981,7 @@ function openProduct(id) {
     const sizes = p.sizes || [];
     if (sizes.length > 0) {
       sizesContainer.innerHTML = sizes.map((s, i) =>
-        `<button class="size-btn${i===0?' active':''}" onclick="selectSize(this,${s.price})">${s.ml} ml — ${s.price} €</button>`
+        `<button class="size-btn${i===0?' active':''}" onclick="selectSize(this,${s.price})">${s.ml} ml</button>`
       ).join('');
       if (sizes.length > 0) {
         currentProductPrice = sizes[0].price;
@@ -1123,10 +1123,6 @@ function switchTab(btn, tabId) {
 
 function switchAccTab(name) {}
 
-function selectSize(btn) {
-  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
 
 function selectThumb(el) {
   document.querySelectorAll('.product-thumb').forEach(t => t.classList.remove('active'));
