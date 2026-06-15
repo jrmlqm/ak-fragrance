@@ -975,7 +975,7 @@ document.addEventListener('keydown', e => {
 /* ══════════════════════════════
    NAVIGATION
 ══════════════════════════════ */
-function showPage(name) {
+function showPage(name, pushState = true) {
   closeMobileMenu();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
@@ -985,7 +985,20 @@ function showPage(name) {
   if (n) n.classList.add('active');
   if (name === 'account') loadOrders();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (pushState) history.pushState({ page: name }, '', '#' + name);
 }
+
+window.addEventListener('popstate', e => {
+  const name = e.state?.page || 'home';
+  showPage(name, false);
+});
+
+(function() {
+  const valid = ['home','shop','brands','histoire','contact','account','cart','checkout','legal'];
+  const hash = location.hash.replace('#', '');
+  if (hash && valid.includes(hash)) showPage(hash, false);
+  else history.replaceState({ page: 'home' }, '', '#home');
+})();
 
 function toggleMobileMenu() {
   const nav = document.getElementById('mobile-nav');
