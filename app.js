@@ -829,8 +829,8 @@ function productCardHTML(p) {
   const priceHTML = p.promo_price
     ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${p.promo_price}€</span>${p.price} €</div>`
     : `<div class="product-price">${p.price} €</div>`;
-  const safeName = p.name.replace(/'/g, "\\'");
-  const safeBrand = p.brand.replace(/'/g, "\\'");
+  const safeName = (p.name || '').replace(/'/g, "\\'");
+  const safeBrand = (p.brand || '').replace(/'/g, "\\'");
   const useImg = mainImg || '';
   return `<div class="product-card" onclick="openProduct(${p.id})">
     <div class="product-img">${badge}${imgHTML}</div>
@@ -882,6 +882,17 @@ function renderAll() {
   ).join('');
 
   renderNoteFilters();
+
+  // Adjust price range max to fit actual product prices
+  if (products.length) {
+    const maxPrice = Math.max(...products.map(p => Number(p.price) || 0));
+    const sliderMax = Math.ceil(maxPrice / 100) * 100 || 500;
+    const slider = document.querySelector('.price-range');
+    if (slider) { slider.max = sliderMax; slider.value = sliderMax; }
+    const pmaxEl = document.getElementById('pmax');
+    if (pmaxEl) pmaxEl.textContent = sliderMax + '€';
+  }
+
   filterShop();
 }
 
@@ -917,10 +928,10 @@ function filterShop() {
   const checkedNotes = [...getCheckedNotes('notes-top-filters'), ...getCheckedNotes('notes-heart-filters'), ...getCheckedNotes('notes-base-filters')];
 
   let list = products.filter(p => {
-    const ms = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.notes_top || []).join(' ').toLowerCase().includes(q);
-    const mb = checkedBrands.length === 0 || checkedBrands.includes(p.brand.toLowerCase());
+    const ms = !q || (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.notes_top || []).join(' ').toLowerCase().includes(q);
+    const mb = checkedBrands.length === 0 || checkedBrands.includes((p.brand || '').toLowerCase());
     const mn = checkedNotes.length === 0 || checkedNotes.some(n => (p.notes_top||[]).includes(n) || (p.notes_heart||[]).includes(n) || (p.notes_base||[]).includes(n));
-    return ms && mb && mn && p.price <= maxP;
+    return ms && mb && mn && (Number(p.price) || 0) <= maxP;
   });
   if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
   else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
