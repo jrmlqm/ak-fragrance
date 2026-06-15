@@ -134,11 +134,11 @@
   <section class="section">
     <div class="section-header"><div class="eyebrow">Explorer par univers</div><h2>Nos <em>Catégories</em></h2></div>
     <div class="cats">
-      <div class="cat-card" onclick="showPage('shop')"><div class="cat-icon">♂</div><div class="cat-name">Homme</div></div>
-      <div class="cat-card" onclick="showPage('shop')"><div class="cat-icon">♀</div><div class="cat-name">Femme</div></div>
-      <div class="cat-card" onclick="showPage('shop')"><div class="cat-icon">✦</div><div class="cat-name">Mixte</div></div>
-      <div class="cat-card" onclick="showPage('nouveautes')"><div class="cat-icon">◈</div><div class="cat-name">Nouveautés</div></div>
-      <div class="cat-card" onclick="showPage('shop')"><div class="cat-icon">★</div><div class="cat-name">Best Sellers</div></div>
+      <div class="cat-card" data-cat="homme" onclick="showPage('shop')"><div class="cat-icon">♂</div><div class="cat-name">Homme</div></div>
+      <div class="cat-card" data-cat="femme" onclick="showPage('shop')"><div class="cat-icon">♀</div><div class="cat-name">Femme</div></div>
+      <div class="cat-card" data-cat="mixte" onclick="showPage('shop')"><div class="cat-icon">✦</div><div class="cat-name">Mixte</div></div>
+      <div class="cat-card" data-cat="nouveautes" onclick="showPage('nouveautes')"><div class="cat-icon">◈</div><div class="cat-name">Nouveautés</div></div>
+      <div class="cat-card" data-cat="bestsellers" onclick="showPage('shop')"><div class="cat-icon">★</div><div class="cat-name">Best Sellers</div></div>
     </div>
   </section>
   <section class="brands-section">
@@ -212,21 +212,14 @@
   <div class="product-page">
     <div class="product-gallery">
       <div class="product-main-img" id="prod-main-img"></div>
-      <div class="product-thumbs">
-        <div class="product-thumb t1 active" onclick="selectThumb(this,0)"></div>
-        <div class="product-thumb t2" onclick="selectThumb(this,1)"></div>
-        <div class="product-thumb t3" onclick="selectThumb(this,2)"></div>
-      </div>
+      <div class="product-thumbs" id="prod-gallery"></div>
     </div>
     <div class="product-detail">
       <div class="brand-label" id="prod-brand"></div>
       <h1 id="prod-name"></h1>
       <div class="rating"><span class="stars"></span><span id="prod-reviews"></span></div>
       <div class="price-big" id="prod-price"></div>
-      <div class="size-btns">
-        <button class="size-btn active" onclick="selectSize(this)">50 ml</button>
-        <button class="size-btn" onclick="selectSize(this)">100 ml</button>
-      </div>
+      <div class="size-btns" id="prod-sizes-container"></div>
       <div class="stock-status"><div class="stock-dot"></div>En stock — Expédition sous 24h</div>
       <button class="add-cart-big" onclick="addToCartProduct()">Ajouter au panier</button>
       <button class="add-wish" onclick="addToWish()">Ajouter à mes favoris</button>

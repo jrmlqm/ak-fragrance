@@ -88,6 +88,10 @@ async function loadData() {
       sbGet('products?order=id'),
       sbGet('brands?order=name')
     ]);
+    try {
+      const settings = await sbGet('settings');
+      applySettings(settings);
+    } catch(e) {}
     renderAll();
     await checkSession();
     connectRealtime();
@@ -97,6 +101,27 @@ async function loadData() {
   } finally {
     document.getElementById('loading').classList.add('hidden');
   }
+}
+
+function applySettings(settings) {
+  const map = {};
+  settings.forEach(s => { map[s.key] = s.value; });
+  if (map.hero_image) {
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      hero.style.backgroundImage = `url(${map.hero_image})`;
+      hero.style.backgroundSize = 'cover';
+      hero.style.backgroundPosition = 'center';
+    }
+  }
+  document.querySelectorAll('.cat-card[data-cat]').forEach(card => {
+    const key = 'cat_bg_' + card.dataset.cat;
+    if (map[key]) {
+      card.style.backgroundImage = `url(${map[key]})`;
+      card.style.backgroundSize = 'cover';
+      card.style.backgroundPosition = 'center';
+    }
+  });
 }
 
 async function checkSession() {
@@ -457,10 +482,9 @@ async function addToCartDirect(name, brand, price, productId, img, imageUrl) {
 async function addToCartProduct() {
   const name = document.getElementById('prod-name').textContent;
   const brand = document.getElementById('prod-brand').textContent;
-  const price = parseInt(document.getElementById('prod-price').textContent);
   const imgEl = document.getElementById('prod-main-img').querySelector('img');
   const p = products.find(x => x.name === name);
-  await addToCartDirect(name, brand, price, p?.id, p?.img, imgEl?.src || '');
+  await addToCartDirect(name, brand, currentProductPrice, p?.id, p?.img, imgEl?.src || '');
 }
 
 async function removeFromCart(idx) {
@@ -798,25 +822,30 @@ const badgeMap = { new: 'Nouveau', best: 'Best Seller', out: 'Rupture' };
 function productCardHTML(p) {
   const bg = swatchBgs[p.img] || swatchBgs.p1;
   const badge = p.badge ? `<div class="product-badge badge-${p.badge}">${badgeMap[p.badge] || p.badge}</div>` : '';
-  const imgHTML = p.image_url
-    ? `<img class="product-img-photo" src="${p.image_url}" alt="${p.name}">`
+  const mainImg = (p.images && p.images[0]) || p.image_url;
+  const imgHTML = mainImg
+    ? `<img class="product-img-photo" src="${mainImg}" alt="${p.name}">`
     : `<div class="product-img-inner" style="background:${bg}"></div>`;
+  const priceHTML = p.promo_price
+    ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${p.promo_price}€</span>${p.price} €</div>`
+    : `<div class="product-price">${p.price} €</div>`;
   const safeName = p.name.replace(/'/g, "\\'");
   const safeBrand = p.brand.replace(/'/g, "\\'");
+  const useImg = mainImg || '';
   return `<div class="product-card" onclick="openProduct(${p.id})">
     <div class="product-img">${badge}${imgHTML}</div>
     <div class="product-info">
       <div class="product-brand">${p.brand}</div>
       <div class="product-name">${p.name}</div>
       <div class="product-stars">${starsHTML(p.stars || 5)}</div>
-      <div class="product-price">${p.price} €</div>
+      ${priceHTML}
       <div class="product-actions">
         <button class="btn-cart"
-          onclick="event.stopPropagation();addToCartDirect('${safeName}','${safeBrand}',${p.price},${p.id},'${p.img || 'p1'}','${p.image_url || ''}')">
+          onclick="event.stopPropagation();addToCartDirect('${safeName}','${safeBrand}',${p.price},${p.id},'${p.img || 'p1'}','${useImg}')">
           Ajouter
         </button>
         <button class="btn-fav" aria-label="Favoris"
-          onclick="event.stopPropagation();quickAddFav('${safeName}',${p.price},${p.id},'${p.img || 'p1'}','${p.image_url || ''}')">
+          onclick="event.stopPropagation();quickAddFav('${safeName}',${p.price},${p.id},'${p.img || 'p1'}','${useImg}')">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 21C12 21 3 14.5 3 8.5a4.5 4.5 0 0 1 9-0.5 4.5 4.5 0 0 1 9 .5c0 6-9 12.5-9 12.5z"/>
           </svg>
@@ -828,9 +857,13 @@ function productCardHTML(p) {
 
 function renderAll() {
   const hb = document.getElementById('home-brands');
-  if (hb) hb.innerHTML = allBrands.slice(0, 4).map(b =>
-    `<div class="brand-card" onclick="showPage('brands')"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
-  ).join('');
+  if (hb) {
+    const featured = allBrands.filter(b => b.featured);
+    const toShow = featured.length ? featured : allBrands.slice(0, 4);
+    hb.innerHTML = toShow.map(b =>
+      `<div class="brand-card" onclick="showPage('brands')"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
+    ).join('');
+  }
 
   const hp = document.getElementById('home-products');
   if (hp) hp.innerHTML = products.slice(0, 8).map(productCardHTML).join('');
@@ -896,32 +929,76 @@ function filterShop() {
   if (el) el.innerHTML = list.length ? list.map(productCardHTML).join('') : '<div class="no-results">Aucun produit trouvé</div>';
 }
 
+let currentProductPrice = 0;
+
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   const bg = swatchBgs[p.img] || swatchBgs.p1;
+  currentProductPrice = p.price;
+
   document.getElementById('prod-brand').textContent = p.brand.toUpperCase();
   document.getElementById('prod-name').textContent = p.name;
   document.getElementById('prod-breadcrumb').textContent = p.name;
-  document.getElementById('prod-price').textContent = p.price + ' €';
   document.getElementById('prod-reviews').textContent = '(' + (p.reviews || 0) + ' avis)';
+
+  // Prix avec promo
+  const priceEl = document.getElementById('prod-price');
+  if (p.promo_price) {
+    priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${p.promo_price} €</span>${p.price} €`;
+  } else {
+    priceEl.textContent = p.price + ' €';
+  }
+
+  // Images : tableau images[] ou image_url
+  const allImgs = (p.images && p.images.length) ? p.images : (p.image_url ? [p.image_url] : []);
   const mainImg = document.getElementById('prod-main-img');
-  if (p.image_url) {
-    mainImg.innerHTML = `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
+  if (allImgs.length) {
+    mainImg.innerHTML = `<img src="${allImgs[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
     mainImg.style.background = 'none';
   } else {
     mainImg.innerHTML = '<div class="bottle"></div>';
     mainImg.style.background = bg;
   }
+
+  // Galerie thumbnails
+  const gallery = document.getElementById('prod-gallery');
+  if (gallery) {
+    if (allImgs.length > 1) {
+      gallery.innerHTML = allImgs.map((url, i) =>
+        `<div class="product-thumb${i===0?' active':''}" onclick="switchProductImg('${url}',this)" style="cursor:pointer">
+          <img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">
+        </div>`
+      ).join('');
+    } else {
+      gallery.innerHTML = '';
+    }
+  }
+
+  // Tailles
+  const sizesContainer = document.getElementById('prod-sizes-container');
+  if (sizesContainer) {
+    const sizes = p.sizes || [];
+    if (sizes.length > 0) {
+      sizesContainer.innerHTML = sizes.map((s, i) =>
+        `<button class="size-btn${i===0?' active':''}" onclick="selectSize(this,${s.price})">${s.ml} ml — ${s.price} €</button>`
+      ).join('');
+      if (sizes.length > 0) {
+        currentProductPrice = sizes[0].price;
+        priceEl.textContent = sizes[0].price + ' €';
+      }
+    } else {
+      sizesContainer.innerHTML = '';
+    }
+  }
+
   document.querySelector('.product-detail .stars').textContent = starsHTML(p.stars || 5);
   document.getElementById('notes-top').innerHTML = (p.notes_top || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-heart').innerHTML = (p.notes_heart || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-base').innerHTML = (p.notes_base || []).map(n => `<span class="note-tag">${n}</span>`).join('');
-  // Fill description tab
+
   const descEl = document.getElementById('tab-desc');
   if (descEl) descEl.textContent = p.description || 'Un parfum d\'exception, alliant les matières premières les plus précieuses à un savoir-faire artisanal unique.';
-
-  // Fill ingredients tab
   const ingrEl = document.getElementById('tab-ingr');
   if (ingrEl) ingrEl.textContent = p.ingredients || 'Alcohol Denat., Parfum (Fragrance), Aqua (Water), Linalool, Coumarin, Limonene. Peut contenir des allergènes.';
 
@@ -931,6 +1008,21 @@ function openProduct(id) {
   document.getElementById('tab-desc').classList.add('active');
   document.getElementById('similar-products').innerHTML = products.filter(x => x.id !== id).slice(0, 4).map(productCardHTML).join('');
   showPage('product');
+}
+
+function switchProductImg(url, thumb) {
+  document.getElementById('prod-main-img').innerHTML = `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  document.querySelectorAll('#prod-gallery .product-thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+}
+
+function selectSize(btn, price) {
+  document.querySelectorAll('#prod-sizes-container .size-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (price !== undefined) {
+    currentProductPrice = price;
+    document.getElementById('prod-price').textContent = price + ' €';
+  }
 }
 
 /* ══════════════════════════════
