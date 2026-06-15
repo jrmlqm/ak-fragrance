@@ -1028,34 +1028,14 @@ function selectThumb(el) {
   el.classList.add('active');
 }
 
-async function subscribeNewsletter(inputId = 'nl-email') {
+function subscribeNewsletter(inputId = 'nl-email') {
   const emailEl = document.getElementById(inputId);
   const e = emailEl?.value.trim();
-  if (!e || !e.includes('@')) { notif('Email invalide'); return; }
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletters`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ email: e })
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      if (txt.includes('duplicate') || txt.includes('unique')) {
-        notif('Cet email est déjà inscrit.'); return;
-      }
-      throw new Error(txt);
-    }
-    notif("Bienvenue dans l'univers AK Fragrance !");
-    if (emailEl) emailEl.value = '';
-  } catch (err) {
-    console.error('Newsletter:', err);
-    notif("Erreur, veuillez réessayer.");
+  if (e && e.includes('@')) {
+    const regEmail = document.getElementById('reg-email');
+    if (regEmail) regEmail.value = e;
   }
+  openAuth('register');
 }
 
 let notifTimer;
