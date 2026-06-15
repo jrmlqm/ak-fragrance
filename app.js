@@ -426,7 +426,7 @@ function renderFavorites() {
     el.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--text-muted);padding:60px 0">Aucun favori pour le moment.</p>';
     return;
   }
-  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(138,110,88,0.1)">` +
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px">` +
     favorites.map(f => `
     <div style="background:var(--beige-light);cursor:pointer;position:relative" onclick="openFavProduct(${f.productId})">
       <div style="aspect-ratio:3/4;overflow:hidden;position:relative">
