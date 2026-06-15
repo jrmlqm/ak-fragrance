@@ -1,5 +1,5 @@
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--beige:#F0E6D3;--beige-light:#FDFAF5;--brown:#8A6E58;--brown-dark:#4A3020;--brown-light:#9A7860;--cream:#FAF6EF;--text:#3A2010;--text-muted:#7A5840}
+:root{--beige:#F0E6D3;--beige-light:#FDFAF5;--brown:#8A6E58;--brown-dark:#4A3020;--brown-light:#9A7860;--cream:#FAF6EF;--text:#2C1A08;--text-muted:#6A4828}
 body{font-family:'Jost',sans-serif;background:var(--beige-light);color:var(--text);overflow-x:hidden;font-size:15px}
 .ticker{background:var(--beige);color:var(--brown-dark);padding:10px 0;overflow:hidden;border-bottom:1px solid rgba(138,110,88,0.2)}
 .ticker-inner{display:flex;gap:80px;white-space:nowrap;animation:ticker 35s linear infinite}
@@ -85,9 +85,9 @@ nav a:hover,nav a.active{color:var(--brown-dark)}
 .cats{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
 .cat-card{aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:24px;cursor:pointer;transition:transform .35s;position:relative;overflow:hidden}
 .cat-card:nth-child(1){background:linear-gradient(165deg,#E8D8B8,#C4A880)}.cat-card:nth-child(2){background:linear-gradient(165deg,#EEE0C4,#CEB898)}.cat-card:nth-child(3){background:linear-gradient(165deg,#F4EAD2,#D8C0A0)}.cat-card:nth-child(4){background:linear-gradient(165deg,#F8EFE0,#E0C8A8)}.cat-card:nth-child(5){background:linear-gradient(165deg,#EAD8B8,#C8A878)}
-.cat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(90,70,53,.35),transparent)}
+.cat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(253,250,245,.75) 0%,rgba(253,250,245,.1) 50%,transparent 100%)}
 .cat-card:hover{transform:scale(1.025)}
-.cat-icon{font-size:28px;margin-bottom:12px;z-index:1;color:#FDFAF5;text-shadow:0 1px 4px rgba(0,0,0,.3)}.cat-name{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:#FDFAF5;z-index:1;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.cat-icon{font-size:26px;margin-bottom:12px;z-index:1;color:var(--brown-dark)}.cat-name{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--brown-dark);z-index:1;font-weight:500}
 .brands-section{background:var(--cream);padding:70px 60px}
 .brands-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(138,110,88,0.12)}
 .brand-card{background:var(--beige-light);padding:44px 28px;text-align:center;cursor:pointer;transition:background .3s}.brand-card:hover{background:var(--beige)}
