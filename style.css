@@ -1,10 +1,10 @@
-*{margin:0;padding:0;box-sizing:border-box;min-width:0}
+*{margin:0;padding:0;box-sizing:border-box}
 :root{--beige:#F0E6D3;--beige-light:#FDFAF5;--brown:#8A6E58;--brown-dark:#4A3020;--brown-light:#9A7860;--cream:#FAF6EF;--text:#2C1A08;--text-muted:#6A4828}
 html{overflow-x:hidden;max-width:100%}
 body{font-family:'Jost',sans-serif;background:var(--beige-light);color:var(--text);overflow-x:hidden;max-width:100%;font-size:15px}
-.ticker{background:var(--beige);color:var(--brown-dark);padding:10px 0;overflow:hidden;border-bottom:1px solid rgba(138,110,88,0.2)}
-.ticker-inner{display:flex;gap:80px;white-space:nowrap;animation:ticker 35s linear infinite}
-.ticker-inner span{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:300}
+.ticker{background:var(--beige);color:var(--brown-dark);padding:10px 0;overflow:hidden;border-bottom:1px solid rgba(138,110,88,0.2);width:100%}
+.ticker-inner{display:flex;gap:80px;flex-wrap:nowrap;animation:ticker 35s linear infinite;width:max-content}
+.ticker-inner span{font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:300;flex-shrink:0;white-space:nowrap}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 header{background:var(--beige-light);padding:0 60px;display:flex;align-items:center;justify-content:space-between;height:80px;border-bottom:1px solid rgba(138,110,88,0.18);position:sticky;top:0;z-index:100}
 .logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;letter-spacing:6px;color:var(--brown-dark);text-transform:uppercase;cursor:pointer}
@@ -322,6 +322,8 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .breadcrumb{padding:16px 24px}
   .newsletter{padding:70px 30px}
   .auth-box{padding:32px 24px}
+  .ticker-inner{gap:50px;animation-duration:28s}
+  .ticker-inner span{font-size:11px;letter-spacing:2px}
 }
 
 /* ── MOBILE ── */
@@ -362,6 +364,8 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .shop-content{padding:20px 16px}
   .promo-wrap{flex-wrap:wrap}
   .brands-grid,.brands-full-grid{grid-template-columns:1fr}
+  .ticker-inner{gap:32px;animation-duration:20s}
+  .ticker-inner span{font-size:10px;letter-spacing:1.5px}
 }
 
 /* ── PETIT MOBILE ── */
@@ -378,6 +382,8 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .footer-bottom{padding:12px}
   .cats{grid-template-columns:repeat(2,1fr)}
   .product-detail h1{font-size:26px}
+  .ticker-inner{gap:20px;animation-duration:16s}
+  .ticker-inner span{font-size:10px;letter-spacing:1px}
 }
 
 /* ── PAGE PAIEMENT ── */
@@ -433,12 +439,4 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .checkout-summary-box{padding:20px 16px}
   .checkout-steps{margin-bottom:24px}
   .delivery-option{padding:12px}
-}
-@media(max-width:600px){
-  .ticker-inner{gap:36px;animation-duration:22s}
-  .ticker-inner span{font-size:10px;letter-spacing:1.5px}
-}
-@media(max-width:400px){
-  .ticker-inner{gap:24px;animation-duration:18s}
-  .ticker-inner span{font-size:10px;letter-spacing:1px}
 }
