@@ -434,3 +434,11 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .checkout-steps{margin-bottom:24px}
   .delivery-option{padding:12px}
 }
+@media(max-width:600px){
+  .ticker-inner{gap:36px;animation-duration:22s}
+  .ticker-inner span{font-size:10px;letter-spacing:1.5px}
+}
+@media(max-width:400px){
+  .ticker-inner{gap:24px;animation-duration:18s}
+  .ticker-inner span{font-size:10px;letter-spacing:1px}
+}
