@@ -318,11 +318,19 @@ function updateAccountUI() {
     if (document.getElementById('acc-address')) document.getElementById('acc-address').value = currentUser.user_metadata?.address || '';
     if (connected) connected.style.display = 'block';
     if (disconnected) disconnected.style.display = 'none';
+    ['nl-email', 'nl-email-histoire'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value) el.value = email;
+    });
   } else {
     btn.style.background = '';
     btn.querySelector('svg').style.stroke = '';
     if (connected) connected.style.display = 'none';
     if (disconnected) disconnected.style.display = 'block';
+    ['nl-email', 'nl-email-histoire'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
   }
 }
 
