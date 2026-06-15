@@ -826,9 +826,12 @@ function productCardHTML(p) {
   const imgHTML = mainImg
     ? `<img class="product-img-photo" src="${mainImg}" alt="${p.name}">`
     : `<div class="product-img-inner" style="background:${bg}"></div>`;
-  const priceHTML = p.promo_price
-    ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${p.promo_price}€</span>${p.price} €</div>`
-    : `<div class="product-price">${p.price} €</div>`;
+  const firstSize = p.sizes && p.sizes[0];
+  const displayPrice = firstSize ? firstSize.price : p.price;
+  const displayPromo = firstSize ? firstSize.promo_price : p.promo_price;
+  const priceHTML = displayPromo
+    ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${displayPromo}€</span>${displayPrice} €</div>`
+    : `<div class="product-price">${displayPrice} €</div>`;
   const safeName = (p.name || '').replace(/'/g, "\\'");
   const safeBrand = (p.brand || '').replace(/'/g, "\\'");
   const useImg = mainImg || '';
@@ -992,10 +995,12 @@ function openProduct(id) {
     const sizes = p.sizes || [];
     if (sizes.length > 0) {
       sizesContainer.innerHTML = sizes.map((s, i) =>
-        `<button class="size-btn${i===0?' active':''}" onclick="selectSize(this,${s.price})">${s.ml} ml</button>`
+        `<button class="size-btn${i===0?' active':''}" onclick="selectSize(this,${s.price},${s.promo_price||'null'})">${s.ml} ml</button>`
       ).join('');
-      if (sizes.length > 0) {
-        currentProductPrice = sizes[0].price;
+      currentProductPrice = sizes[0].price;
+      if (sizes[0].promo_price) {
+        priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${sizes[0].promo_price} €</span>${sizes[0].price} €`;
+      } else {
         priceEl.textContent = sizes[0].price + ' €';
       }
     } else {
@@ -1027,12 +1032,17 @@ function switchProductImg(url, thumb) {
   thumb.classList.add('active');
 }
 
-function selectSize(btn, price) {
+function selectSize(btn, price, promoPrice) {
   document.querySelectorAll('#prod-sizes-container .size-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (price !== undefined) {
     currentProductPrice = price;
-    document.getElementById('prod-price').textContent = price + ' €';
+    const priceEl = document.getElementById('prod-price');
+    if (promoPrice) {
+      priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${promoPrice} €</span>${price} €`;
+    } else {
+      priceEl.textContent = price + ' €';
+    }
   }
 }
 
