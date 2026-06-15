@@ -1020,11 +1020,22 @@ function selectThumb(el) {
   el.classList.add('active');
 }
 
-function subscribeNewsletter() {
-  const e = document.getElementById('nl-email').value.trim();
+async function subscribeNewsletter(inputId = 'nl-email') {
+  const emailEl = document.getElementById(inputId);
+  const e = emailEl?.value.trim();
   if (!e || !e.includes('@')) { notif('Email invalide'); return; }
-  notif("Bienvenue dans l'univers AK Fragrance !");
-  document.getElementById('nl-email').value = '';
+  try {
+    await sbPost('newsletters', { email: e }, SUPABASE_KEY);
+    notif("Bienvenue dans l'univers AK Fragrance !");
+    if (emailEl) emailEl.value = '';
+  } catch (err) {
+    if (err.message?.includes('duplicate') || err.message?.includes('unique')) {
+      notif('Cet email est déjà inscrit.');
+    } else {
+      console.error('Newsletter:', err);
+      notif("Erreur, veuillez réessayer.");
+    }
+  }
 }
 
 let notifTimer;
