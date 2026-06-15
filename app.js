@@ -1025,16 +1025,28 @@ async function subscribeNewsletter(inputId = 'nl-email') {
   const e = emailEl?.value.trim();
   if (!e || !e.includes('@')) { notif('Email invalide'); return; }
   try {
-    await sbPost('newsletters', { email: e }, SUPABASE_KEY);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletters`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ email: e })
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      if (txt.includes('duplicate') || txt.includes('unique')) {
+        notif('Cet email est déjà inscrit.'); return;
+      }
+      throw new Error(txt);
+    }
     notif("Bienvenue dans l'univers AK Fragrance !");
     if (emailEl) emailEl.value = '';
   } catch (err) {
-    if (err.message?.includes('duplicate') || err.message?.includes('unique')) {
-      notif('Cet email est déjà inscrit.');
-    } else {
-      console.error('Newsletter:', err);
-      notif("Erreur, veuillez réessayer.");
-    }
+    console.error('Newsletter:', err);
+    notif("Erreur, veuillez réessayer.");
   }
 }
 
