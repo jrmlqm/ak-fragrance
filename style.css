@@ -124,6 +124,7 @@ nav a:hover,nav a.active{color:var(--brown-dark)}
 .filter-check input[type=checkbox]{accent-color:var(--brown);width:13px;height:13px;cursor:pointer}
 .filter-check span{font-size:11px;color:var(--text-muted)}
 .price-range{width:100%;accent-color:var(--brown);margin:10px 0 6px;cursor:pointer}
+.pyramid-level-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:8px;padding-left:2px}
 .price-vals{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted)}
 .shop-content{padding:40px 44px}
 .shop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}

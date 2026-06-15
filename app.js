@@ -840,7 +840,27 @@ function renderAll() {
     `<label class="filter-check"><input type="checkbox" value="${b.name}" onchange="filterShop()"><span>${b.name}</span></label>`
   ).join('');
 
+  renderNoteFilters();
   filterShop();
+}
+
+function renderNoteFilters() {
+  const top = new Set(), heart = new Set(), base = new Set();
+  products.forEach(p => {
+    (p.notes_top || []).forEach(n => top.add(n));
+    (p.notes_heart || []).forEach(n => heart.add(n));
+    (p.notes_base || []).forEach(n => base.add(n));
+  });
+  const makeBoxes = (notes, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = notes.size
+      ? [...notes].sort().map(n => `<label class="filter-check"><input type="checkbox" onchange="filterShop()"><span>${n}</span></label>`).join('')
+      : '<span style="font-size:11px;color:var(--text-muted)">—</span>';
+  };
+  makeBoxes(top, 'notes-top-filters');
+  makeBoxes(heart, 'notes-heart-filters');
+  makeBoxes(base, 'notes-base-filters');
 }
 
 function filterShop() {
@@ -851,10 +871,15 @@ function filterShop() {
   // Get selected brands
   const checkedBrands = [...document.querySelectorAll('#brand-filters input[type=checkbox]:checked')].map(cb => cb.value.toLowerCase());
 
+  // Get selected notes across all pyramid levels
+  const getCheckedNotes = id => [...document.querySelectorAll(`#${id} input:checked`)].map(cb => cb.nextElementSibling.textContent);
+  const checkedNotes = [...getCheckedNotes('notes-top-filters'), ...getCheckedNotes('notes-heart-filters'), ...getCheckedNotes('notes-base-filters')];
+
   let list = products.filter(p => {
     const ms = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.notes_top || []).join(' ').toLowerCase().includes(q);
     const mb = checkedBrands.length === 0 || checkedBrands.includes(p.brand.toLowerCase());
-    return ms && mb && p.price <= maxP;
+    const mn = checkedNotes.length === 0 || checkedNotes.some(n => (p.notes_top||[]).includes(n) || (p.notes_heart||[]).includes(n) || (p.notes_base||[]).includes(n));
+    return ms && mb && mn && p.price <= maxP;
   });
   if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
   else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
