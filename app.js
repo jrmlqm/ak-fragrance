@@ -431,7 +431,7 @@ function renderFavorites() {
     <div style="background:var(--beige-light);cursor:pointer;position:relative" onclick="openFavProduct(${f.productId})">
       <div style="aspect-ratio:3/4;overflow:hidden;position:relative">
         ${f.imageUrl
-          ? `<img src="${f.imageUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover">`
+          ? `<img src="${f.imageUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" decoding="async">`
           : `<div style="width:100%;height:100%;background:${swatchBgs[f.img] || swatchBgs.p1}"></div>`}
         <button onclick="event.stopPropagation();removeFav(${f.dbId})"
           style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;cursor:pointer;font-size:12px;color:var(--brown-dark);display:flex;align-items:center;justify-content:center">✕</button>
@@ -824,7 +824,7 @@ function productCardHTML(p) {
   const badge = p.badge ? `<div class="product-badge badge-${p.badge}">${badgeMap[p.badge] || p.badge}</div>` : '';
   const mainImg = (p.images && p.images[0]) || p.image_url;
   const imgHTML = mainImg
-    ? `<img class="product-img-photo" src="${mainImg}" alt="${p.name}">`
+    ? `<img class="product-img-photo" src="${mainImg}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`
     : `<div class="product-img-inner" style="background:${bg}"></div>`;
   const firstSize = p.sizes && p.sizes[0];
   const displayPrice = firstSize ? firstSize.price : p.price;
@@ -968,7 +968,7 @@ function openProduct(id) {
   const allImgs = (p.images && p.images.length) ? p.images : (p.image_url ? [p.image_url] : []);
   const mainImg = document.getElementById('prod-main-img');
   if (allImgs.length) {
-    mainImg.innerHTML = `<img src="${allImgs[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
+    mainImg.innerHTML = `<img src="${allImgs[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" decoding="async">`;
     mainImg.style.background = 'none';
   } else {
     mainImg.innerHTML = '<div class="bottle"></div>';
@@ -981,7 +981,7 @@ function openProduct(id) {
     if (allImgs.length > 1) {
       gallery.innerHTML = allImgs.map((url, i) =>
         `<div class="product-thumb${i===0?' active':''}" onclick="switchProductImg('${url}',this)" style="cursor:pointer">
-          <img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">
+          <img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" decoding="async">
         </div>`
       ).join('');
     } else {
@@ -1070,7 +1070,7 @@ function updateSearchResults(q) {
   res.innerHTML = matches.slice(0, 8).map(p => `
     <div class="search-result-item" onclick="closeSearch();openProduct(${p.id})">
       ${p.image_url
-        ? `<img class="search-result-swatch" src="${p.image_url}" alt="${p.name}" style="object-fit:cover">`
+        ? `<img class="search-result-swatch" src="${p.image_url}" alt="${p.name}" style="object-fit:cover" loading="lazy" decoding="async">`
         : `<div class="search-result-swatch" style="background:${swatchBgs[p.img] || swatchBgs.p1}"></div>`}
       <div>
         <div class="search-result-name">${p.name}</div>
