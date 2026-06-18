@@ -1012,6 +1012,9 @@ function openProduct(id) {
   document.getElementById('notes-top').innerHTML = (p.notes_top || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-heart').innerHTML = (p.notes_heart || []).map(n => `<span class="note-tag">${n}</span>`).join('');
   document.getElementById('notes-base').innerHTML = (p.notes_base || []).map(n => `<span class="note-tag">${n}</span>`).join('');
+  const hasNotes = (p.notes_top||[]).length || (p.notes_heart||[]).length || (p.notes_base||[]).length;
+  const notesSection = document.querySelector('.notes-section');
+  if (notesSection) notesSection.style.display = hasNotes ? '' : 'none';
 
   const descEl = document.getElementById('tab-desc');
   if (descEl) descEl.textContent = p.description || 'Un parfum d\'exception, alliant les matières premières les plus précieuses à un savoir-faire artisanal unique.';
