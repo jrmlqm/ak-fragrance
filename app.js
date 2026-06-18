@@ -1217,9 +1217,11 @@ async function sendConfirmationEmail() {
     body: JSON.stringify({
       customerEmail: document.getElementById('co-email')?.value,
       customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
+      customerPhone: document.getElementById('co-phone')?.value || '',
       items: cart.map(i => ({ name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
       total: calculateCheckoutTotal(),
       deliveryType: document.querySelector('input[name="delivery"]:checked')?.value || 'standard',
+      deliveryCost: checkoutDeliveryCost,
       address
     })
   });
