@@ -49,7 +49,7 @@
   <div class="search-box">
     <div class="search-input-wrap">
       <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
-      <input type="text" id="search-global-input" placeholder="Rechercher un parfum, une marque…" oninput="updateSearchResults(this.value)">
+      <input type="text" id="search-global-input" placeholder="Rechercher un parfum, une maison…" oninput="updateSearchResults(this.value)">
       <button class="search-close" onclick="closeSearch()">✕</button>
     </div>
     <div class="search-results" id="search-results">
@@ -60,9 +60,8 @@
 
 <div class="ticker">
   <div class="ticker-inner">
-    <span>Nouveautés chaque semaine</span><span>✦</span><span>Livraison dans toute la France</span><span>✦</span>
-    <span>Showroom privé sur rendez-vous</span><span>✦</span><span>Nouveautés chaque semaine</span><span>✦</span>
-    <span>Livraison dans toute la France</span><span>✦</span><span>Showroom privé sur rendez-vous</span><span>✦</span>
+    <span>Showroom sur rendez-vous · 7j/7 · <span class="showroom-hours">11h30 – 21h30</span></span><span>✦</span><span>Nouveautés chaque semaine</span><span>✦</span><span>Livraison dans toute la France</span><span>✦</span>
+    <span>Showroom sur rendez-vous · 7j/7 · <span class="showroom-hours">11h30 – 21h30</span></span><span>✦</span><span>Nouveautés chaque semaine</span><span>✦</span><span>Livraison dans toute la France</span><span>✦</span>
   </div>
 </div>
 
@@ -74,7 +73,7 @@
   <nav>
     <a onclick="showPage('home')" id="nav-home" class="active">Accueil</a>
     <a onclick="showPage('shop')" id="nav-shop">Boutique</a>
-    <a onclick="showPage('brands')" id="nav-brands">Marques</a>
+    <a onclick="showPage('brands')" id="nav-brands">Maisons</a>
     <a onclick="showPage('nouveautes')" id="nav-nouveautes">Nouveautés</a>
     <a onclick="showPage('histoire')" id="nav-histoire">Notre Histoire</a>
     <a onclick="showPage('contact')" id="nav-contact">Contact</a>
@@ -83,6 +82,9 @@
     <button class="icon-btn" aria-label="Recherche" onclick="openSearch()">
       <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
     </button>
+    <a class="icon-btn admin-only" aria-label="Administration" title="Administration" href="/admin.html" style="display:none">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </a>
     <button class="icon-btn" aria-label="Mon compte" id="account-btn" onclick="handleAccountClick()">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     </button>
@@ -109,10 +111,11 @@
     <nav class="mobile-nav-links">
       <a onclick="showPage('home')">Accueil</a>
       <a onclick="showPage('shop')">Boutique</a>
-      <a onclick="showPage('brands')">Marques</a>
+      <a onclick="showPage('brands')">Maisons</a>
       <a onclick="showPage('nouveautes')">Nouveautés</a>
       <a onclick="showPage('histoire')">Notre Histoire</a>
       <a onclick="showPage('contact')">Contact</a>
+      <a class="admin-only" href="/admin.html" style="display:none">Administration</a>
     </nav>
     <div class="mobile-nav-bottom">
       <a onclick="showPage('cgv')" style="font-size:9px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;cursor:pointer;display:block;margin-bottom:8px">CGV</a>
@@ -131,6 +134,18 @@
     </div>
     <div class="scroll-hint"><div class="scroll-line"></div><span>Défiler</span></div>
   </section>
+  <section class="showroom-band">
+    <div class="showroom-band-text">
+      <div class="eyebrow">Une expérience privée</div>
+      <h2>Le Showroom <em>sur rendez-vous</em></h2>
+      <p>Prenez le temps de sentir, de comparer et d'être conseillé, en tête-à-tête, dans notre showroom en Île-de-France.</p>
+    </div>
+    <div class="showroom-band-hours">
+      <div class="showroom-days">Du lundi au dimanche</div>
+      <div class="showroom-hours showroom-hours-big">11h30 – 21h30</div>
+      <button class="btn-primary" onclick="bookShowroom()">Prendre rendez-vous</button>
+    </div>
+  </section>
   <section class="section">
     <div class="section-header"><div class="eyebrow">Explorer par univers</div><h2>Nos <em>Catégories</em></h2></div>
     <div class="cats">
@@ -142,7 +157,7 @@
     </div>
   </section>
   <section class="brands-section">
-    <div class="section-header"><div class="eyebrow">Maisons d'exception</div><h2>Marques <em>à l'Honneur</em></h2></div>
+    <div class="section-header"><div class="eyebrow">Créateurs d'exception</div><h2>Maisons <em>à l'Honneur</em></h2></div>
     <div class="brands-grid" id="home-brands"></div>
   </section>
   <section class="section">
@@ -164,7 +179,7 @@
 <div class="page" id="page-shop">
   <div class="shop-layout">
     <aside class="filters">
-      <div class="filter-section-title">Marques</div><hr class="filter-hr"><div id="brand-filters"></div>
+      <div class="filter-section-title">Maisons</div><hr class="filter-hr"><div id="brand-filters"></div>
       <div class="filter-section-title">Prix</div><hr class="filter-hr">
       <input type="range" class="price-range" min="0" max="500" value="500" oninput="document.getElementById('pmax').textContent=this.value+'€';filterShop()">
       <div class="price-vals"><span>0€</span><span id="pmax">500€</span></div>
@@ -252,10 +267,10 @@
   </section>
 </div>
 
-<!-- PAGE MARQUES -->
+<!-- PAGE MAISONS -->
 <div class="page" id="page-brands">
   <section class="section">
-    <div class="section-header"><div class="eyebrow">Maisons sélectionnées avec soin</div><h2>Nos <em>Marques</em></h2></div>
+    <div class="section-header"><div class="eyebrow">Sélectionnées avec exigence</div><h2>Nos <em>Maisons</em></h2></div>
     <div class="brands-full-grid" id="brands-full"></div>
   </section>
 </div>
@@ -272,15 +287,27 @@
 <div class="page" id="page-histoire">
   <div class="histoire-hero"><div><p class="hero-eyebrow" style="color:var(--brown);margin-bottom:16px">Notre histoire</p><h1>AK <em>Fragrance</em></h1></div></div>
   <div class="histoire-content">
-    <p class="quote">« AK Fragrance est née d'une passion pour la parfumerie de niche et l'exclusivité. »</p>
-    <button class="btn-secondary" onclick="showPage('contact')">Prendre rendez-vous au showroom</button>
+    <p class="quote">« Un parfum ne se choisit pas sur une fiche produit. Il se découvre sur la peau, il se raconte, il se partage. »</p>
+    <p class="histoire-intro">AK Fragrance est née d'une conviction simple : la parfumerie de niche mérite mieux qu'un rayon. Loin des grandes enseignes et des parfums que l'on croise partout, nous avons voulu créer un lieu, en ligne comme au showroom, où l'on prend le temps de découvrir des créations rares, signées par des maisons qui travaillent la matière avec exigence.</p>
   </div>
   <div class="histoire-grid">
-    <div class="histoire-block"><h3>Notre Passion</h3><p>Depuis nos débuts, chaque flacon est choisi avec soin pour sa singularité et son excellence artisanale.</p></div>
-    <div class="histoire-block"><h3>Notre Sélection</h3><p>Nous parcourons le monde pour dénicher des créations rares : des maisons italiennes aux ateliers orientaux.</p></div>
-    <div class="histoire-block"><h3>Nos Valeurs</h3><p>Authenticité, exclusivité et service d'exception. Chaque client mérite une expérience personnalisée.</p></div>
-    <div class="histoire-block"><h3>Notre Showroom</h3><p>Situé en Île-de-France, notre showroom privé accueille sur rendez-vous pour une expérience immersive.</p></div>
+    <div class="histoire-block"><h3>Nos Maisons</h3><p>Nous choisissons des maisons de parfumerie indépendantes et confidentielles, reconnues pour la qualité de leurs matières premières et l'audace de leurs créations. Chaque parfum est senti et porté avant d'entrer dans notre sélection.</p></div>
+    <div class="histoire-block"><h3>Notre Exigence</h3><p>Des flacons authentiques, conservés avec soin et expédiés sous 24h dans toute la France. Une sélection volontairement resserrée : nous ne gardons que les parfums qui nous ont vraiment marqués.</p></div>
+    <div class="histoire-block"><h3>Le Conseil</h3><p>Boisé, oriental, floral ou frais : nous vous guidons selon vos goûts, vos habitudes et la façon dont un parfum évolue sur vous. Un accompagnement sincère, sans discours commercial.</p></div>
+    <div class="histoire-block"><h3>Le Showroom</h3><p>En Île-de-France, notre showroom vous reçoit sur rendez-vous, <span class="showroom-days-lower">du lundi au dimanche</span> (<span class="showroom-hours">11h30 – 21h30</span>). Un moment privilégié pour sentir, comparer et trouver votre signature.</p></div>
   </div>
+  <section class="showroom-band">
+    <div class="showroom-band-text">
+      <div class="eyebrow">Venez nous rencontrer</div>
+      <h2>Le Showroom <em>sur rendez-vous</em></h2>
+      <p>Chaque visite est privée : nous vous recevons seul ou accompagné, le temps qu'il faut.</p>
+    </div>
+    <div class="showroom-band-hours">
+      <div class="showroom-days">Du lundi au dimanche</div>
+      <div class="showroom-hours showroom-hours-big">11h30 – 21h30</div>
+      <button class="btn-primary" onclick="bookShowroom()">Prendre rendez-vous</button>
+    </div>
+  </section>
   <section class="newsletter"><h2>Rejoignez l'aventure<br><em>AK Fragrance</em></h2><p>Soyez les premiers informés</p><div class="newsletter-form"><input type="email" id="nl-email-histoire" placeholder="Votre adresse email"><button onclick="subscribeNewsletter('nl-email-histoire')">S'inscrire</button></div></section>
 </div>
 
@@ -292,7 +319,7 @@
       <p class="sub">Notre équipe est à votre disposition pour vous accompagner dans votre découverte olfactive.</p>
       <div class="contact-items">
         <div class="contact-item"><div class="contact-icon">✉</div><div><strong>Email</strong><p>akfragrance75@gmail.com</p></div></div>
-        <div class="contact-item"><div class="contact-icon">◎</div><div><strong>Showroom</strong><p>Île-de-France · Sur rendez-vous</p></div></div>
+        <div class="contact-item"><div class="contact-icon">◎</div><div><strong>Showroom · Sur rendez-vous</strong><p>Île-de-France<br><span class="showroom-days">Du lundi au dimanche</span> · <span class="showroom-hours">11h30 – 21h30</span></p></div></div>
         <div class="contact-item"><div class="contact-icon">◷</div><div><strong>Livraison</strong><p>Toute la France · 24–48h ouvrés</p></div></div>
       </div>
     </div>
@@ -335,6 +362,15 @@
     <div id="account-connected" style="display:none;width:100%;max-width:800px;margin:0 auto">
       <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--brown-dark);margin-bottom:8px;text-align:center">Mon <em>Compte</em></div>
       <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:40px;text-align:center" id="account-email-display"></div>
+
+      <!-- ACCÈS ADMIN (visible uniquement pour les comptes administrateurs) -->
+      <div class="admin-only admin-access" style="display:none">
+        <div>
+          <div class="admin-access-title">Espace administration</div>
+          <div class="admin-access-sub">Produits, maisons, vitrine et horaires du showroom</div>
+        </div>
+        <a class="btn-primary" href="/admin.html">Ouvrir l'administration</a>
+      </div>
 
       <!-- COORDONNÉES -->
       <div style="background:var(--cream);padding:32px;margin-bottom:16px">
@@ -692,9 +728,9 @@
       <a class="social-btn" href="https://www.tiktok.com/@ak_fragrance75" target="_blank" rel="noopener" title="TikTok">Tk</a>
     </div>
   </div>
-  <div class="footer-col"><h4>Navigation</h4><a onclick="showPage('home')">Accueil</a><a onclick="showPage('shop')">Boutique</a><a onclick="showPage('brands')">Marques</a><a onclick="showPage('histoire')">Notre Histoire</a><a onclick="showPage('contact')">Contact</a></div>
+  <div class="footer-col"><h4>Navigation</h4><a onclick="showPage('home')">Accueil</a><a onclick="showPage('shop')">Boutique</a><a onclick="showPage('brands')">Maisons</a><a onclick="showPage('histoire')">Notre Histoire</a><a onclick="showPage('contact')">Contact</a></div>
   <div class="footer-col"><h4>Informations</h4><a onclick="showPage('cgv')">CGV</a><a onclick="showPage('mentions')">Mentions légales</a><a onclick="showPage('cgv')">Livraison & retours</a><a onclick="showPage('cgv')">Paiement sécurisé</a></div>
-  <div class="footer-col"><h4>Contact</h4><a>akfragrance75@gmail.com</a><a>Île-de-France</a><a onclick="showPage('contact')">Prendre rendez-vous</a></div>
+  <div class="footer-col"><h4>Showroom</h4><a>Île-de-France · Sur rendez-vous</a><a><span class="showroom-days">Du lundi au dimanche</span><br><span class="showroom-hours">11h30 – 21h30</span></a><a onclick="bookShowroom()">Prendre rendez-vous</a><a href="mailto:akfragrance75@gmail.com">akfragrance75@gmail.com</a></div>
 </footer>
 <div class="footer-bottom"><p>© 2025 AK Fragrance — Tous droits réservés</p><p>Paiement 100% sécurisé · SSL · RGPD conforme</p></div>
 <div class="notif" id="notif"></div>

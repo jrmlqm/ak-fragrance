@@ -445,3 +445,36 @@ footer{background:#D4C0A0;padding:70px 60px;display:grid;grid-template-columns:2
   .checkout-steps{margin-bottom:24px}
   .delivery-option{padding:12px}
 }
+
+/* ── SHOWROOM (mise en avant) ── */
+.showroom-band{background:var(--brown-dark);color:var(--beige-light);padding:80px 60px;display:grid;grid-template-columns:1.3fr 1fr;gap:60px;align-items:center}
+.showroom-band .eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(240,230,211,.6);margin-bottom:14px}
+.showroom-band h2{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,54px);font-weight:300;line-height:1.1;margin-bottom:20px;color:var(--beige-light)}
+.showroom-band h2 em{font-style:italic}
+.showroom-band-text p{font-size:15px;line-height:1.85;color:rgba(240,230,211,.8);max-width:520px}
+.showroom-band-hours{text-align:center;border:1px solid rgba(240,230,211,.25);padding:44px 32px}
+.showroom-band-hours .showroom-days{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(240,230,211,.7);margin-bottom:10px}
+.showroom-hours-big{display:block;font-family:'Cormorant Garamond',serif;font-size:clamp(36px,4.5vw,56px);font-weight:300;letter-spacing:2px;margin-bottom:28px;color:var(--beige-light)}
+.showroom-band .btn-primary{border-color:var(--beige-light);color:var(--beige-light)}
+.showroom-band .btn-primary:hover{background:var(--beige-light);color:var(--brown-dark)}
+#page-histoire .showroom-band{margin-bottom:0}
+
+.histoire-intro{font-size:16px;line-height:1.95;color:var(--text-muted);max-width:720px;margin:0 auto}
+
+/* ── ACCÈS ADMIN ── */
+.admin-access{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:var(--brown-dark);padding:24px 32px;margin-bottom:16px}
+.admin-access-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--beige-light)}
+.admin-access-sub{font-size:11px;letter-spacing:1px;color:rgba(240,230,211,.65);margin-top:4px}
+.admin-access .btn-primary{border-color:var(--beige-light);color:var(--beige-light);text-decoration:none;padding:14px 32px}
+.admin-access .btn-primary:hover{background:var(--beige-light);color:var(--brown-dark)}
+a.icon-btn{text-decoration:none}
+
+@media(max-width:900px){
+  .showroom-band{grid-template-columns:1fr;gap:36px;padding:60px 30px;text-align:center}
+  .showroom-band-text p{margin:0 auto}
+}
+@media(max-width:600px){
+  .showroom-band{padding:48px 16px}
+  .showroom-band-hours{padding:32px 16px}
+  .admin-access{padding:20px;justify-content:center;text-align:center}
+}

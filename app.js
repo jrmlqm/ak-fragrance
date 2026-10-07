@@ -1,5 +1,7 @@
 const SUPABASE_URL = 'https://vuqukiuxzplvaavctypm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_tgw32oQkZeOwmTvTHpEuog_oIQYla2_';
+// Comptes qui voient le lien vers l'administration (garder synchronisé avec admin.html)
+const ADMIN_EMAILS = ['akfragrance75@gmail.com'];
 
 let products = [];
 let allBrands = [];
@@ -106,6 +108,14 @@ async function loadData() {
 function applySettings(settings) {
   const map = {};
   settings.forEach(s => { map[s.key] = s.value; });
+  if (map.showroom_days) {
+    document.querySelectorAll('.showroom-days').forEach(el => { el.textContent = map.showroom_days; });
+    const lower = map.showroom_days.charAt(0).toLowerCase() + map.showroom_days.slice(1);
+    document.querySelectorAll('.showroom-days-lower').forEach(el => { el.textContent = lower; });
+  }
+  if (map.showroom_hours) {
+    document.querySelectorAll('.showroom-hours').forEach(el => { el.textContent = map.showroom_hours; });
+  }
   if (map.hero_image) {
     const hero = document.querySelector('.hero');
     if (hero) {
@@ -327,6 +337,8 @@ function updateAccountUI() {
   const btn = document.getElementById('account-btn');
   const connected = document.getElementById('account-connected');
   const disconnected = document.getElementById('account-disconnected');
+  const isAdmin = !!currentUser && ADMIN_EMAILS.includes((currentUser.email || '').toLowerCase());
+  document.querySelectorAll('.admin-only').forEach(el => { el.style.display = isAdmin ? '' : 'none'; });
   if (currentUser) {
     btn.style.background = 'rgba(90,70,53,0.12)';
     btn.querySelector('svg').style.stroke = 'var(--brown-dark)';
@@ -1259,6 +1271,18 @@ async function sendContactMessage() {
     btn.textContent = 'Envoyer le message';
     btn.disabled = false;
   }
+}
+
+function bookShowroom() {
+  showPage('contact');
+  const msg = document.getElementById('contact-message');
+  if (msg && !msg.value.trim()) {
+    msg.value = 'Bonjour, je souhaite prendre rendez-vous au showroom. Mes disponibilités : ';
+  }
+  setTimeout(() => {
+    const target = document.getElementById(document.getElementById('contact-name')?.value ? 'contact-message' : 'contact-name');
+    target?.focus({ preventScroll: true });
+  }, 400);
 }
 
 /* ══════════════════════════════
