@@ -292,6 +292,7 @@ async function doRegister() {
   const phone = document.getElementById('reg-phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
+  const passwordConfirm = document.getElementById('reg-password-confirm').value;
   const msg = document.getElementById('register-msg');
   msg.className = 'auth-msg';
   msg.textContent = '';
@@ -303,6 +304,12 @@ async function doRegister() {
   if (password.length < 6) {
     msg.className = 'auth-msg error';
     msg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
+    return;
+  }
+  if (password !== passwordConfirm) {
+    msg.className = 'auth-msg error';
+    msg.textContent = 'Les deux mots de passe ne correspondent pas.';
+    document.getElementById('reg-password-confirm').focus();
     return;
   }
   try {

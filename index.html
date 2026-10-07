@@ -37,7 +37,8 @@
       </div>
       <div class="auth-field"><label>Téléphone</label><input type="tel" id="reg-phone" placeholder="+33 6 00 00 00 00"></div>
       <div class="auth-field"><label>Email</label><input type="email" id="reg-email" placeholder="votre@email.fr"></div>
-      <div class="auth-field"><label>Mot de passe</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <div class="auth-field"><label>Mot de passe</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" autocomplete="new-password" onkeydown="if(event.key==='Enter')document.getElementById('reg-password-confirm').focus()"></div>
+      <div class="auth-field"><label>Confirmer le mot de passe</label><input type="password" id="reg-password-confirm" placeholder="Saisissez-le à nouveau" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()"></div>
       <button class="auth-btn" onclick="doRegister()">Créer mon compte</button>
       <div class="auth-msg" id="register-msg"></div>
     </div>

@@ -23,7 +23,7 @@ nav a:hover,nav a.active{color:var(--brown-dark)}
 /* ── AUTH MODAL ── */
 .auth-overlay{position:fixed;inset:0;background:rgba(74,56,40,0.5);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
 .auth-overlay.open{opacity:1;pointer-events:all}
-.auth-box{background:var(--beige-light);width:420px;max-width:94vw;border:1px solid rgba(138,110,88,0.15);padding:48px 44px}
+.auth-box{background:var(--beige-light);width:420px;max-width:94vw;max-height:92vh;overflow-y:auto;border:1px solid rgba(138,110,88,0.15);padding:48px 44px}
 .auth-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:5px;color:var(--brown-dark);text-transform:uppercase;text-align:center;margin-bottom:4px}
 .auth-logo em{font-style:italic}
 .auth-tabs{display:flex;border-bottom:1px solid rgba(138,110,88,0.15);margin:28px 0 28px}
