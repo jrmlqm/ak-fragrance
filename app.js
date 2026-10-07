@@ -96,6 +96,7 @@ async function loadData() {
     } catch(e) {}
     renderAll();
     await checkSession();
+    await handlePaymentReturn();
     connectRealtime();
   } catch (e) {
     notif('Erreur de chargement');
@@ -587,11 +588,17 @@ function openCheckout() {
     const ph = document.getElementById('co-phone'); if (ph) ph.value = m.phone || '';
   }
   checkoutDeliveryCost = 0;
+  checkoutDeliveryType = 'standard';
   checkoutPromoDiscount = 0;
+  checkoutPromoCode = '';
   document.getElementById('co-promo-msg').textContent = '';
   document.getElementById('co-promo-line').style.display = 'none';
   document.getElementById('co-promo').value = '';
-  document.querySelectorAll('.delivery-option').forEach((o, i) => o.classList.toggle('selected', i === 0));
+  document.querySelectorAll('.delivery-option').forEach((o, i) => {
+    o.classList.toggle('selected', i === 0);
+    const radio = o.querySelector('input[type=radio]');
+    if (radio) radio.checked = i === 0;
+  });
   stripeElements = null;
   currentClientSecret = null;
   currentPaymentIntentId = null;
@@ -603,11 +610,16 @@ function openCheckout() {
 }
 
 let checkoutDeliveryCost = 0;
+let checkoutDeliveryType = 'standard';
 let checkoutPromoDiscount = 0;
+let checkoutPromoCode = '';
+let pendingAmountUpdate = Promise.resolve();
 
 function selectDelivery(el, type, cost) {
+  if (type === checkoutDeliveryType) return;
   document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
+  checkoutDeliveryType = type;
   checkoutDeliveryCost = cost;
   renderCheckoutSummary();
   updateStripeAmount();
@@ -617,6 +629,8 @@ function applyCheckoutPromo() {
   const code = document.getElementById('co-promo').value.trim().toUpperCase();
   const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
   const msg = document.getElementById('co-promo-msg');
+  // Simple aperçu : le serveur revérifie le code et recalcule la réduction (api/_pricing.js)
+  checkoutPromoCode = (code === 'AK10' || code === 'BIENVENUE') ? code : '';
   if (code === 'AK10') {
     checkoutPromoDiscount = Math.round(sub * 0.10);
     msg.style.color = 'var(--brown)';
@@ -666,31 +680,65 @@ function renderCheckoutSummary() {
 }
 
 /* ── FORMULAIRE DE PAIEMENT (STRIPE) ── */
+// Clé publique de secours (mode test) si STRIPE_PUBLISHABLE_KEY n'est pas définie sur Vercel
+const STRIPE_FALLBACK_KEY = 'pk_test_51Tg6AeGtJjq6z10aakr3XknFkweXR1cDg0sUakztGVqeqJgHYPML823KsGI5nY0I4lVZ483h07eHU2TK9MEO9s6B00dDsZ3Inv';
+
+async function getStripe() {
+  if (stripeInstance) return stripeInstance;
+  let key = STRIPE_FALLBACK_KEY;
+  try {
+    const res = await fetch('/api/config');
+    const cfg = await res.json();
+    if (cfg.stripePublishableKey) key = cfg.stripePublishableKey;
+  } catch (e) {}
+  stripeInstance = Stripe(key);
+  return stripeInstance;
+}
+
+// Ce que le serveur utilise pour recalculer le montant (il relit les prix dans Supabase)
+function checkoutPricingPayload() {
+  return {
+    items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+    deliveryType: checkoutDeliveryType,
+    promoCode: checkoutPromoCode
+  };
+}
+
+// Le montant affiché suit celui calculé par le serveur, qui est celui réellement débité
+function applyServerOrder(order) {
+  if (!order || typeof order.total !== 'number') return;
+  checkoutDeliveryCost = order.deliveryCost;
+  checkoutPromoDiscount = order.discount;
+  renderCheckoutSummary();
+}
+
 async function initPaymentForm() {
   const el = document.getElementById('stripe-payment-element');
   if (!el) return;
 
   el.innerHTML = '<div style="padding:20px;text-align:center;font-size:10px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase">Chargement du formulaire...</div>';
 
-  if (!stripeInstance) stripeInstance = Stripe('pk_test_51Tg6AeGtJjq6z10aakr3XknFkweXR1cDg0sUakztGVqeqJgHYPML823KsGI5nY0I4lVZ483h07eHU2TK9MEO9s6B00dDsZ3Inv');
-
   try {
+    await getStripe();
+    const sent = checkoutPricingPayload();
     const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: calculateCheckoutTotal(),
-        currency: 'eur',
+        ...sent,
         customerEmail: document.getElementById('co-email')?.value || '',
-        customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
-        items: cart.map(i => ({ name: i.name, qty: i.qty }))
+        customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' ')
       })
     });
-    const { clientSecret, paymentIntentId, error: apiError } = await res.json();
-    if (apiError) throw new Error(apiError);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Paiement indisponible');
+    const { clientSecret, paymentIntentId } = data;
 
     currentClientSecret = clientSecret;
     currentPaymentIntentId = paymentIntentId;
+    applyServerOrder(data);
+    // Livraison ou code promo changés pendant la création du paiement
+    if (sent.deliveryType !== checkoutDeliveryType || sent.promoCode !== checkoutPromoCode) updateStripeAmount();
 
     const appearance = {
       theme: 'stripe',
@@ -722,17 +770,87 @@ async function initPaymentForm() {
   }
 }
 
-async function updateStripeAmount() {
+function updateStripeAmount() {
   if (!currentPaymentIntentId) return;
+  pendingAmountUpdate = pendingAmountUpdate.then(async () => {
+    try {
+      const res = await fetch('/api/update-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentIntentId: currentPaymentIntentId, ...checkoutPricingPayload() })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Erreur de mise à jour du montant');
+      applyServerOrder(data);
+      if (stripeElements) await stripeElements.fetchUpdates();
+    } catch (e) {
+      console.error('updateStripeAmount:', e);
+      notif(e.message);
+    }
+  });
+  return pendingAmountUpdate;
+}
+
+/* ── Commande en attente : permet de l'enregistrer même si la banque,
+   PayPal ou Klarna redirigent le client hors du site pendant le paiement ── */
+function collectCheckoutData() {
+  const val = id => document.getElementById(id)?.value.trim() || '';
+  const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+  return {
+    customerName: [val('co-firstname'), val('co-lastname')].filter(Boolean).join(' '),
+    customerEmail: val('co-email'),
+    customerPhone: val('co-phone'),
+    address: [val('co-address'), val('co-address2'), val('co-zip'), val('co-city')].filter(Boolean).join(', '),
+    deliveryType: checkoutDeliveryType,
+    deliveryCost: checkoutDeliveryCost,
+    items: cart.map(i => ({ id: i.id, dbId: i.dbId, name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
+    subtotal: sub,
+    promoDiscount: checkoutPromoDiscount,
+    total: calculateCheckoutTotal()
+  };
+}
+
+async function finalizeOrder(paymentIntentId, data) {
+  await saveOrder(paymentIntentId, data);
+  sendConfirmationEmail(data).catch(e => console.error('email:', e));
+
+  if (currentUser && accessToken) {
+    for (const item of data.items) {
+      if (item.dbId) try { await sbDelete('cart_items?id=eq.' + item.dbId, accessToken); } catch (e) {}
+    }
+  }
+  try { localStorage.removeItem('ak_pending_order'); } catch (e) {}
+  cart = [];
+  updateCartBadge();
+  renderCart();
+  showPage('confirmation');
+}
+
+// Retour sur le site après une redirection de paiement (3D Secure, PayPal, Klarna…)
+async function handlePaymentReturn() {
+  const params = new URLSearchParams(location.search);
+  const clientSecret = params.get('payment_intent_client_secret');
+  if (!clientSecret) return;
+  history.replaceState({ page: 'home' }, '', location.pathname + '#home');
+
+  let pending = null;
+  try { pending = JSON.parse(localStorage.getItem('ak_pending_order') || 'null'); } catch (e) {}
+
   try {
-    await fetch('/api/update-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentIntentId: currentPaymentIntentId, amount: calculateCheckoutTotal() })
-    });
-    if (stripeElements) await stripeElements.fetchUpdates();
+    const stripe = await getStripe();
+    const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+    if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+      if (pending && pending.paymentIntentId === paymentIntent.id) {
+        await finalizeOrder(paymentIntent.id, pending.data);
+      } else {
+        showPage('confirmation');
+      }
+    } else {
+      notif('Le paiement n\'a pas abouti — aucun montant n\'a été débité');
+      showPage('cart');
+    }
   } catch (e) {
-    console.error('updateStripeAmount:', e);
+    console.error('handlePaymentReturn:', e);
   }
 }
 
@@ -758,31 +876,34 @@ async function placeOrder() {
   btn.disabled = true;
 
   try {
-    const { error } = await stripeInstance.confirmPayment({
+    // Attendre qu'un éventuel changement de livraison / code promo soit pris en compte
+    await pendingAmountUpdate;
+    const data = collectCheckoutData();
+    try {
+      localStorage.setItem('ak_pending_order', JSON.stringify({ paymentIntentId: currentPaymentIntentId, data }));
+    } catch (e) {}
+
+    const { error, paymentIntent } = await stripeInstance.confirmPayment({
       elements: stripeElements,
-      confirmParams: { return_url: window.location.origin },
+      confirmParams: { return_url: window.location.origin + '/' },
       redirect: 'if_required'
     });
 
     if (error) {
       errEl.textContent = error.message;
-      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${data.total} €</span>`;
       btn.disabled = false;
       return;
     }
 
-    await saveOrder(currentPaymentIntentId);
-    sendConfirmationEmail().catch(e => console.error('email:', e));
-
-    if (currentUser && accessToken) {
-      for (const item of cart) {
-        if (item.dbId) try { await sbDelete('cart_items?id=eq.' + item.dbId, accessToken); } catch (e) {}
-      }
+    if (paymentIntent && paymentIntent.status !== 'succeeded' && paymentIntent.status !== 'processing') {
+      errEl.textContent = 'Le paiement n\'a pas abouti. Veuillez réessayer.';
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${data.total} €</span>`;
+      btn.disabled = false;
+      return;
     }
-    cart = [];
-    updateCartBadge();
-    renderCart();
-    showPage('confirmation');
+
+    await finalizeOrder(currentPaymentIntentId, data);
 
   } catch (e) {
     errEl.textContent = e.message;
@@ -1187,27 +1308,21 @@ function notif(msg) {
 /* ══════════════════════════════
    COMMANDES
 ══════════════════════════════ */
-async function saveOrder(paymentIntentId) {
+async function saveOrder(paymentIntentId, data) {
   if (!currentUser || !accessToken) return;
-  const address = [
-    document.getElementById('co-address')?.value,
-    document.getElementById('co-address2')?.value,
-    document.getElementById('co-zip')?.value,
-    document.getElementById('co-city')?.value
-  ].filter(Boolean).join(', ');
   try {
     await sbPost('orders', {
       user_id: currentUser.id,
-      customer_name: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
-      customer_email: document.getElementById('co-email')?.value,
-      customer_phone: document.getElementById('co-phone')?.value || null,
-      address,
-      delivery_type: document.querySelector('input[name="delivery"]:checked')?.value || 'standard',
-      delivery_cost: checkoutDeliveryCost,
-      items: cart.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
-      subtotal: cart.reduce((s, i) => s + (i.price * i.qty), 0),
-      promo_discount: checkoutPromoDiscount,
-      total: calculateCheckoutTotal(),
+      customer_name: data.customerName,
+      customer_email: data.customerEmail,
+      customer_phone: data.customerPhone || null,
+      address: data.address,
+      delivery_type: data.deliveryType,
+      delivery_cost: data.deliveryCost,
+      items: data.items.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
+      subtotal: data.subtotal,
+      promo_discount: data.promoDiscount,
+      total: data.total,
       stripe_payment_intent_id: paymentIntentId,
       status: 'confirmed'
     }, accessToken);
@@ -1216,25 +1331,19 @@ async function saveOrder(paymentIntentId) {
   }
 }
 
-async function sendConfirmationEmail() {
-  const address = [
-    document.getElementById('co-address')?.value,
-    document.getElementById('co-address2')?.value,
-    document.getElementById('co-zip')?.value,
-    document.getElementById('co-city')?.value
-  ].filter(Boolean).join(', ');
+async function sendConfirmationEmail(data) {
   await fetch('/api/send-confirmation', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      customerEmail: document.getElementById('co-email')?.value,
-      customerName: [document.getElementById('co-firstname')?.value, document.getElementById('co-lastname')?.value].filter(Boolean).join(' '),
-      customerPhone: document.getElementById('co-phone')?.value || '',
-      items: cart.map(i => ({ name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
-      total: calculateCheckoutTotal(),
-      deliveryType: document.querySelector('input[name="delivery"]:checked')?.value || 'standard',
-      deliveryCost: checkoutDeliveryCost,
-      address
+      customerEmail: data.customerEmail,
+      customerName: data.customerName,
+      customerPhone: data.customerPhone || '',
+      items: data.items.map(i => ({ name: i.name, brand: i.brand, price: i.price, qty: i.qty })),
+      total: data.total,
+      deliveryType: data.deliveryType,
+      deliveryCost: data.deliveryCost,
+      address: data.address
     })
   });
 }
