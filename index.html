@@ -131,19 +131,14 @@
     <div class="hero-content">
       <p class="hero-sub">Niche &nbsp;·&nbsp; Exclusivité &nbsp;·&nbsp; Sélection</p>
       <button class="btn-primary" onclick="showPage('shop')">Découvrir la collection</button>
+      <div class="hero-showroom">
+        <div class="hs-rule"></div>
+        <div class="hs-label">Showroom privé · sur rendez-vous</div>
+        <div class="hs-hours"><span class="showroom-days">Du lundi au dimanche</span>, <span class="showroom-hours">11h30 – 21h30</span></div>
+        <a class="showroom-link" onclick="bookShowroom()">Réserver une visite</a>
+      </div>
     </div>
     <div class="scroll-hint"><div class="scroll-line"></div><span>Défiler</span></div>
-  </section>
-  <section class="showroom">
-    <div class="showroom-card">
-      <div class="showroom-eyebrow">Showroom privé · Île-de-France</div>
-      <h2>Le Showroom <em>sur rendez-vous</em></h2>
-      <div class="showroom-rule">✦</div>
-      <div class="showroom-days">Du lundi au dimanche</div>
-      <div class="showroom-hours showroom-hours-big">11h30 – 21h30</div>
-      <p>Prenez le temps de sentir, de comparer et d'être conseillé, en tête-à-tête, au cœur de notre sélection.</p>
-      <button class="btn-primary" onclick="bookShowroom()">Réserver une visite</button>
-    </div>
   </section>
   <section class="section">
     <div class="section-header"><div class="eyebrow">Explorer par univers</div><h2>Nos <em>Catégories</em></h2></div>
@@ -295,16 +290,13 @@
     <div class="histoire-block"><h3>Le Conseil</h3><p>Boisé, oriental, floral ou frais : nous vous guidons selon vos goûts, vos habitudes et la façon dont un parfum évolue sur vous. Un accompagnement sincère, sans discours commercial.</p></div>
     <div class="histoire-block"><h3>Le Showroom</h3><p>En Île-de-France, notre showroom vous reçoit sur rendez-vous, <span class="showroom-days-lower">du lundi au dimanche</span> (<span class="showroom-hours">11h30 – 21h30</span>). Un moment privilégié pour sentir, comparer et trouver votre signature.</p></div>
   </div>
-  <section class="showroom">
-    <div class="showroom-card">
-      <div class="showroom-eyebrow">Venez nous rencontrer</div>
-      <h2>Le Showroom <em>sur rendez-vous</em></h2>
-      <div class="showroom-rule">✦</div>
-      <div class="showroom-days">Du lundi au dimanche</div>
-      <div class="showroom-hours showroom-hours-big">11h30 – 21h30</div>
-      <p>Chaque visite est privée : nous vous recevons seul ou accompagné, le temps qu'il faut.</p>
-      <button class="btn-primary" onclick="bookShowroom()">Réserver une visite</button>
-    </div>
+  <section class="showroom-editorial">
+    <div class="se-eyebrow">Le Showroom</div>
+    <p class="se-quote">Venez sentir avant de choisir.</p>
+    <div class="se-rule"><span>✦</span></div>
+    <div class="se-label">Showroom privé · Île-de-France · sur rendez-vous</div>
+    <div class="se-hours"><span class="showroom-days">Du lundi au dimanche</span>, <span class="showroom-hours">11h30 – 21h30</span></div>
+    <a class="showroom-link" onclick="bookShowroom()">Réserver une visite</a>
   </section>
   <section class="newsletter"><h2>Rejoignez l'aventure<br><em>AK Fragrance</em></h2><p>Soyez les premiers informés</p><div class="newsletter-form"><input type="email" id="nl-email-histoire" placeholder="Votre adresse email"><button onclick="subscribeNewsletter('nl-email-histoire')">S'inscrire</button></div></section>
 </div>
