@@ -743,10 +743,10 @@ async function initPaymentForm() {
     const appearance = {
       theme: 'stripe',
       variables: {
-        colorPrimary: '#1C1917',
-        colorBackground: '#FDFAF5',
-        colorText: '#1C1917',
-        colorTextSecondary: '#5F5750',
+        colorPrimary: '#3B2A1C',
+        colorBackground: '#FAF5EC',
+        colorText: '#2E2015',
+        colorTextSecondary: '#6B5644',
         colorDanger: '#9A3A3A',
         fontFamily: '"Jost", sans-serif',
         borderRadius: '0px',
@@ -754,7 +754,7 @@ async function initPaymentForm() {
         fontSizeBase: '13px'
       },
       rules: {
-        '.Input': { border: '1px solid rgba(28,25,23,0.15)', boxShadow: 'none', padding: '12px 14px' },
+        '.Input': { border: '1px solid rgba(59,42,28,0.18)', boxShadow: 'none', padding: '12px 14px' },
         '.Input:focus': { border: '1px solid #B39062', boxShadow: 'none' },
         '.Label': { fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#A3845A' }
       }
