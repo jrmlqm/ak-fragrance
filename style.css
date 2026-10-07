@@ -178,7 +178,7 @@ nav a:hover,nav a.active{color:var(--brown-dark)}
 .tab-content{padding:24px 0;font-size:15px;color:var(--text-muted);line-height:1.85}
 .tab-panel{display:none}.tab-panel.active{display:block}
 .brands-full-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
-.histoire-hero{height:72vh;background:linear-gradient(135deg,#F8F0E1 0%,#E8D6B7 55%,#D2B78D 100%);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;text-align:center;padding:60px}
+.histoire-hero{height:56vh;background:linear-gradient(135deg,#F8F0E1 0%,#E8D6B7 55%,#D2B78D 100%);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;text-align:center;padding:60px}
 .histoire-hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,7vw,88px);color:var(--brown-dark);font-weight:300;letter-spacing:3px}
 .histoire-hero h1 em{font-style:italic}
 .histoire-content{padding:80px 80px 40px;max-width:860px;margin:0 auto;text-align:center}
@@ -456,6 +456,23 @@ footer{background:var(--cream);border-top:1px solid var(--line);padding:70px 60p
 .showroom-link{margin-top:6px;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--brown-dark);cursor:pointer;padding-bottom:6px;background:linear-gradient(var(--gold),var(--gold)) left bottom/100% 1px no-repeat;transition:background-size .4s,color .3s}
 .showroom-link:hover{color:var(--gold);background-size:40% 1px;background-position:center bottom}
 .hero .scroll-hint{display:none}
+
+/* ── NOTRE HISTOIRE : récit sur une colonne ── */
+.story{max-width:680px;margin:0 auto;padding:96px 24px 110px}
+.story .story-lead{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:clamp(26px,3.2vw,36px);line-height:1.45;color:var(--brown-dark);text-align:center}
+.story-rule{display:flex;align-items:center;justify-content:center;gap:16px;margin:44px auto 52px;color:var(--gold);font-size:10px}
+.story-rule::before,.story-rule::after{content:'';width:70px;height:1px;background:var(--gold);opacity:.6}
+.story p{font-size:17px;line-height:2;color:var(--text-muted);margin-bottom:26px}
+.story .story-lead{margin-bottom:0}
+.story-first::first-letter{float:left;font-family:'Cormorant Garamond',serif;font-size:76px;line-height:.82;padding:8px 12px 0 0;color:var(--brown-dark)}
+.story-pull{margin:52px 0;padding:6px 0 6px 28px;border-left:1px solid var(--gold);font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:clamp(24px,3vw,32px);line-height:1.4;color:var(--brown-dark)}
+.story .story-signature{margin:48px 0 0;text-align:right;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--brown-dark)}
+@media(max-width:600px){
+  .story{padding:56px 18px 64px}
+  .story p{font-size:15px;line-height:1.9}
+  .story-first::first-letter{font-size:60px}
+  .story-pull{margin:36px 0;padding-left:18px}
+}
 
 /* Page histoire : section éditoriale sans cadre */
 .showroom-editorial{background:var(--sand);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:100px 24px;text-align:center}
