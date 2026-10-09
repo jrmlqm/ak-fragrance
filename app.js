@@ -245,7 +245,7 @@ function renderOrders(orders) {
         </div>
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border:1px solid ${statusColor[status]||'#8A6E58'};color:${statusColor[status]||'#8A6E58'}">${statusLabel[status]||status}</span>
-          <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)">${order.total} €</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--brown-dark)">${euro(order.total)}</span>
         </div>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
@@ -566,7 +566,7 @@ function renderFavorites() {
       <div style="padding:16px">
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">${f.brand||''}</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--brown-dark);margin-bottom:6px">${f.name}</div>
-        <div style="font-size:13px;font-weight:500;color:var(--brown-dark);margin-bottom:12px">${f.price} €</div>
+        <div style="font-size:13px;font-weight:500;color:var(--brown-dark);margin-bottom:12px">${euro(f.price)}</div>
         <button class="btn-cart" onclick="event.stopPropagation();addToCartDirect('${f.name}','${f.brand||''}',${f.price},${f.productId},'${f.img}','${f.imageUrl}')">
           Ajouter au panier
         </button>
@@ -662,18 +662,18 @@ function renderCart() {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-        <div style="font-size:18px;font-weight:300;color:var(--brown-dark)">${item.price * item.qty} €</div>
+        <div style="font-size:18px;font-weight:300;color:var(--brown-dark)">${euro(item.price * item.qty)}</div>
         <button class="remove-item" onclick="removeFromCart(${idx})">✕</button>
       </div>
     </div>`).join('');
 
   const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
   const liv = sub >= 150 ? 0 : 9.9;
-  document.getElementById('cart-subtotal').textContent = sub + ' €';
-  document.getElementById('cart-livraison').textContent = liv === 0 ? 'Offerte' : liv.toFixed(2) + ' €';
-  document.getElementById('cart-total').textContent = (sub + liv).toFixed(0) + ' €';
+  document.getElementById('cart-subtotal').textContent = euro(sub);
+  document.getElementById('cart-livraison').textContent = liv === 0 ? 'Offerte' : euro(liv);
+  document.getElementById('cart-total').textContent = euro(sub + liv);
   document.getElementById('livraison-note').textContent =
-    sub > 0 && sub < 150 ? `Plus que ${150 - sub}€ pour la livraison offerte` :
+    sub > 0 && sub < 150 ? `Plus que ${euro(150 - sub)} pour la livraison offerte` :
     sub >= 150 ? '✓ Livraison offerte appliquée' : '';
 }
 
@@ -773,11 +773,11 @@ function calculateCheckoutTotal() {
 function renderCheckoutSummary() {
   const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
   const total = calculateCheckoutTotal();
-  document.getElementById('co-subtotal').textContent = sub + ' €';
-  document.getElementById('co-delivery-line').textContent = checkoutDeliveryCost === 0 ? 'Offerte' : checkoutDeliveryCost.toFixed(2) + ' €';
-  document.getElementById('co-promo-amount').textContent = '-' + checkoutPromoDiscount + ' €';
-  document.getElementById('co-total').textContent = total + ' €';
-  document.getElementById('co-total-btn').textContent = total + ' €';
+  document.getElementById('co-subtotal').textContent = euro(sub);
+  document.getElementById('co-delivery-line').textContent = checkoutDeliveryCost === 0 ? 'Offerte' : euro(checkoutDeliveryCost);
+  document.getElementById('co-promo-amount').textContent = '-' + euro(checkoutPromoDiscount);
+  document.getElementById('co-total').textContent = euro(total);
+  document.getElementById('co-total-btn').textContent = euro(total);
   const items = document.getElementById('checkout-items');
   if (items) items.innerHTML = cart.map(item => `
     <div class="checkout-item">
@@ -789,7 +789,7 @@ function renderCheckoutSummary() {
         <div class="checkout-item-brand">${item.brand}</div>
         <div class="checkout-item-qty">Qté : ${item.qty}</div>
       </div>
-      <div class="checkout-item-price">${item.price * item.qty} €</div>
+      <div class="checkout-item-price">${euro(item.price * item.qty)}</div>
     </div>`).join('');
 }
 
@@ -1005,14 +1005,14 @@ async function placeOrder() {
 
     if (error) {
       errEl.textContent = error.message;
-      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${data.total} €</span>`;
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${euro(data.total)}</span>`;
       btn.disabled = false;
       return;
     }
 
     if (paymentIntent && paymentIntent.status !== 'succeeded' && paymentIntent.status !== 'processing') {
       errEl.textContent = 'Le paiement n\'a pas abouti. Veuillez réessayer.';
-      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${data.total} €</span>`;
+      btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${euro(data.total)}</span>`;
       btn.disabled = false;
       return;
     }
@@ -1021,7 +1021,7 @@ async function placeOrder() {
 
   } catch (e) {
     errEl.textContent = e.message;
-    btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${total} €</span>`;
+    btn.innerHTML = `Confirmer et payer — <span id="co-total-btn">${euro(total)}</span>`;
     btn.disabled = false;
   }
 }
@@ -1062,6 +1062,12 @@ const swatchBgs = {
   p8: 'linear-gradient(160deg,#FCEEDD,#E8C898)'
 };
 
+// Prix : « 120 € » si rond, « 0,50 € » sinon (arrondi au centime)
+function euro(n) {
+  const v = Math.round((Number(n) || 0) * 100) / 100;
+  return (Number.isInteger(v) ? v : v.toFixed(2).replace('.', ',')) + ' €';
+}
+
 function starsHTML(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
 
 const badgeMap = { new: 'Nouveau', best: 'Best Seller', out: 'Rupture' };
@@ -1077,8 +1083,8 @@ function productCardHTML(p) {
   const displayPrice = firstSize ? firstSize.price : p.price;
   const displayPromo = firstSize ? firstSize.promo_price : p.promo_price;
   const priceHTML = displayPromo
-    ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${displayPromo}€</span>${displayPrice} €</div>`
-    : `<div class="product-price">${displayPrice} €</div>`;
+    ? `<div class="product-price"><span style="text-decoration:line-through;font-size:11px;color:var(--text-muted);margin-right:5px">${euro(displayPromo)}</span>${euro(displayPrice)}</div>`
+    : `<div class="product-price">${euro(displayPrice)}</div>`;
   const safeName = (p.name || '').replace(/'/g, "\\'");
   const safeBrand = (p.brand || '').replace(/'/g, "\\'");
   const useImg = mainImg || '';
@@ -1268,9 +1274,9 @@ function openProduct(id) {
   // Prix avec promo
   const priceEl = document.getElementById('prod-price');
   if (p.promo_price) {
-    priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${p.promo_price} €</span>${p.price} €`;
+    priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${euro(p.promo_price)}</span>${euro(p.price)}`;
   } else {
-    priceEl.textContent = p.price + ' €';
+    priceEl.textContent = euro(p.price);
   }
 
   // Images : tableau images[] ou image_url
@@ -1308,9 +1314,9 @@ function openProduct(id) {
       ).join('');
       currentProductPrice = sizes[0].price;
       if (sizes[0].promo_price) {
-        priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${sizes[0].promo_price} €</span>${sizes[0].price} €`;
+        priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${euro(sizes[0].promo_price)}</span>${euro(sizes[0].price)}`;
       } else {
-        priceEl.textContent = sizes[0].price + ' €';
+        priceEl.textContent = euro(sizes[0].price);
       }
     } else {
       sizesContainer.innerHTML = '';
@@ -1351,9 +1357,9 @@ function selectSize(btn, price, promoPrice) {
     currentProductPrice = price;
     const priceEl = document.getElementById('prod-price');
     if (promoPrice) {
-      priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${promoPrice} €</span>${price} €`;
+      priceEl.innerHTML = `<span style="text-decoration:line-through;font-size:16px;color:var(--text-muted);margin-right:8px">${euro(promoPrice)}</span>${euro(price)}`;
     } else {
-      priceEl.textContent = price + ' €';
+      priceEl.textContent = euro(price);
     }
   }
 }
@@ -1388,7 +1394,7 @@ function updateSearchResults(q) {
         <div class="search-result-name">${p.name}</div>
         <div class="search-result-brand">${p.brand}</div>
       </div>
-      <div class="search-result-price">${p.price} €</div>
+      <div class="search-result-price">${euro(p.price)}</div>
     </div>`).join('');
 }
 

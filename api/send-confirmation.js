@@ -1,5 +1,11 @@
 const https = require('https');
 
+// Prix : « 120 € » si rond, « 0,50 € » sinon
+function euro(n) {
+  const v = Math.round((Number(n) || 0) * 100) / 100;
+  return (Number.isInteger(v) ? v : v.toFixed(2).replace('.', ',')) + ' €';
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -14,7 +20,7 @@ module.exports = async function handler(req, res) {
       <tr>
         <td style="padding:12px 0;border-bottom:1px solid #F0E6D3;font-family:'Georgia',serif;font-size:16px;color:#5A4635">${item.name}</td>
         <td style="padding:12px 0;border-bottom:1px solid #F0E6D3;text-align:center;font-size:13px;color:#9A8878">×${item.qty}</td>
-        <td style="padding:12px 0;border-bottom:1px solid #F0E6D3;text-align:right;font-size:13px;font-weight:500;color:#5A4635">${item.price * item.qty} €</td>
+        <td style="padding:12px 0;border-bottom:1px solid #F0E6D3;text-align:right;font-size:13px;font-weight:500;color:#5A4635">${euro(item.price * item.qty)}</td>
       </tr>`).join('');
 
     const deliveryNames = {
@@ -23,7 +29,7 @@ module.exports = async function handler(req, res) {
       relay: 'Point relais (4–6 jours)'
     };
 
-    const deliveryCostLabel = deliveryCost > 0 ? deliveryCost.toFixed(2).replace('.', ',') + ' €' : 'Offerte';
+    const deliveryCostLabel = deliveryCost > 0 ? euro(deliveryCost) : 'Offerte';
 
     const emailHTML = `<!DOCTYPE html>
 <html>
@@ -56,7 +62,7 @@ module.exports = async function handler(req, res) {
               </tr>
               <tr>
                 <td colspan="2" style="padding:14px 0;border-top:1px solid #F0E6D3;font-family:'Georgia',serif;font-size:18px;color:#5A4635">Total</td>
-                <td style="padding:14px 0;border-top:1px solid #F0E6D3;text-align:right;font-family:'Georgia',serif;font-size:18px;color:#5A4635">${total} €</td>
+                <td style="padding:14px 0;border-top:1px solid #F0E6D3;text-align:right;font-family:'Georgia',serif;font-size:18px;color:#5A4635">${euro(total)}</td>
               </tr>
             </table>
           </td>
@@ -119,7 +125,7 @@ module.exports = async function handler(req, res) {
         <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px">${item.name}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:center">${item.brand || ''}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:center">×${item.qty}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;font-weight:600">${(item.price * item.qty).toFixed(2).replace('.', ',')} €</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;font-weight:600">${euro(item.price * item.qty)}</td>
       </tr>`
     ).join('');
 
@@ -173,7 +179,7 @@ module.exports = async function handler(req, res) {
           </tr>
           <tr style="background:#5A4635">
             <td colspan="3" style="padding:12px;font-size:14px;color:#FDFAF5;font-weight:600">TOTAL</td>
-            <td style="padding:12px;text-align:right;font-size:16px;color:#FDFAF5;font-weight:700">${total} €</td>
+            <td style="padding:12px;text-align:right;font-size:16px;color:#FDFAF5;font-weight:700">${euro(total)}</td>
           </tr>
         </table>
       </td>
@@ -190,7 +196,7 @@ module.exports = async function handler(req, res) {
     await sendEmail({
       from: 'AK Fragrance <contact@ak-fragrance.com>',
       to: ['akfragrance75@gmail.com'],
-      subject: `🛍️ Nouvelle commande — ${customerName} — ${total} €`,
+      subject: `🛍️ Nouvelle commande — ${customerName} — ${euro(total)}`,
       html: adminHTML
     });
 

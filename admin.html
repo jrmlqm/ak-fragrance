@@ -331,9 +331,8 @@ body{font-family:'Jost',sans-serif;background:#F5F0E8;color:var(--text);min-heig
         <div class="form-group"><label>Nom du parfum</label><input type="text" id="f-name" placeholder="Ex : Naxos"></div>
         <div class="form-group">
           <label>Maison</label>
-          <select id="f-brand-select">
-            <option value="">-- Choisir une maison --</option>
-          </select>
+          <input type="text" id="f-brand-select" list="brand-suggestions" placeholder="Ex : Xerjoff (nouvelle maison créée automatiquement)" autocomplete="off">
+          <datalist id="brand-suggestions"></datalist>
         </div>
       </div>
       <div class="form-row">
@@ -365,8 +364,8 @@ body{font-family:'Jost',sans-serif;background:#F5F0E8;color:var(--text);min-heig
       <!-- SECTION PRIX & TAILLES -->
       <div class="modal-section-title">Prix &amp; Tailles</div>
       <div class="form-row">
-        <div class="form-group"><label>Prix (€)</label><input type="number" id="f-price" placeholder="245" min="0"></div>
-        <div class="form-group"><label>Prix promo barré (€) <span style="font-size:9px;color:var(--text-muted);text-transform:none;letter-spacing:0">— laisser vide si pas de promo</span></label><input type="number" id="f-promo-price" placeholder="320" min="0"></div>
+        <div class="form-group"><label>Prix (€)</label><input type="number" id="f-price" placeholder="245 ou 0,50" min="0" step="0.01"></div>
+        <div class="form-group"><label>Prix promo barré (€) <span style="font-size:9px;color:var(--text-muted);text-transform:none;letter-spacing:0">— laisser vide si pas de promo</span></label><input type="number" id="f-promo-price" placeholder="320" min="0" step="0.01"></div>
       </div>
       <div class="form-group">
         <label>Tailles disponibles <span style="font-size:9px;color:var(--text-muted);text-transform:none;letter-spacing:0">— laisser vide pour prix unique</span></label>
@@ -504,6 +503,13 @@ const CATEGORIES = [
   {key:'frais',  label:'Frais'},
   {key:'niche',  label:'Niche'},
 ];
+
+// Lit un prix saisi (« 0,50 », « 0.5 », « 120 ») ; null si vide ou invalide
+function parsePrice(v){
+  if(v === null || v === undefined) return null;
+  const n = parseFloat(String(v).replace(',', '.').replace(/\s/g, ''));
+  return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
+}
 
 const swatchBgs = {
   p1:'linear-gradient(160deg,#E8D0B0,#C4A070)',p2:'linear-gradient(160deg,#F0D8B8,#D0A878)',
@@ -712,16 +718,24 @@ function renderStats(){
 }
 
 function populateBrandSelect(){
-  const sel = document.getElementById('f-brand-select');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">-- Choisir une maison --</option>';
+  const list = document.getElementById('brand-suggestions');
+  list.innerHTML = '';
   allBrands.forEach(b=>{
     const o = document.createElement('option');
     o.value = b.name;
-    o.textContent = b.name;
-    sel.appendChild(o);
+    list.appendChild(o);
   });
-  if(cur) sel.value = cur;
+}
+
+// Renvoie le nom exact de la maison ; la crée si elle n'existe pas encore
+async function ensureBrand(name){
+  const existing = allBrands.find(b => (b.name||'').trim().toLowerCase() === name.toLowerCase());
+  if(existing) return existing.name;
+  const res = await sbFetch('brands', 'POST', { name, description: '' });
+  if(res && res[0]) allBrands.push(res[0]);
+  allBrands.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  toast(`Maison « ${name} » créée`);
+  return name;
 }
 
 /* ════════════════════════════════════════════
@@ -1084,10 +1098,10 @@ function renderSizes(){
     <div class="size-row">
       <input type="number" value="${s.ml}" placeholder="50" min="1" onchange="sizesData[${i}].ml=parseInt(this.value)||0" style="max-width:70px">
       <span class="size-row-label">ml</span>
-      <input type="number" value="${s.price}" placeholder="120" min="0" onchange="sizesData[${i}].price=parseInt(this.value)||0" style="max-width:90px">
+      <input type="number" value="${s.price}" placeholder="120" min="0" step="0.01" onchange="sizesData[${i}].price=parsePrice(this.value)||0" style="max-width:90px">
       <span class="size-row-label">€</span>
       <span class="size-row-label" style="color:rgba(138,110,88,0.5);font-size:10px">barré:</span>
-      <input type="number" value="${s.promo_price||''}" placeholder="—" min="0" onchange="sizesData[${i}].promo_price=this.value?(parseInt(this.value)||null):null" style="max-width:80px;opacity:0.7">
+      <input type="number" value="${s.promo_price||''}" placeholder="—" min="0" step="0.01" onchange="sizesData[${i}].promo_price=parsePrice(this.value)||null" style="max-width:80px;opacity:0.7">
       <span class="size-row-label" style="opacity:0.6">€</span>
       <button type="button" class="size-rm" onclick="removeSizeRow(${i})">✕</button>
     </div>`).join('');
@@ -1167,23 +1181,26 @@ function selectSwatch(el){
 ════════════════════════════════════════════ */
 async function saveProduct(){
   const name      = document.getElementById('f-name').value.trim();
-  const brand     = document.getElementById('f-brand-select').value;
+  const brandRaw  = document.getElementById('f-brand-select').value.trim().replace(/\s+/g, ' ');
   const category  = document.getElementById('f-category').value;
   const badge     = document.getElementById('f-badge').value;
-  const price     = parseInt(document.getElementById('f-price').value)||0;
-  const promoRaw  = document.getElementById('f-promo-price').value;
-  const promoPrice= promoRaw ? (parseInt(promoRaw)||null) : null;
+  const price     = parsePrice(document.getElementById('f-price').value) || 0;
+  const promoPrice= parsePrice(document.getElementById('f-promo-price').value) || null;
   const img       = document.getElementById('f-img').value||'p1';
   const desc      = document.getElementById('f-desc').value.trim();
   const ingr      = document.getElementById('f-ingredients').value.trim();
 
-  if(!name||!brand||!price){ toast('Nom, maison et prix sont requis'); return; }
+  if(!name){ toast('Le nom du parfum est requis'); return; }
+  if(!brandRaw){ toast('La maison est requise'); return; }
+  const sizesValid = sizesData.filter(s => s.price > 0);
+  if(!price && !sizesValid.length){ toast('Indiquez un prix (ex : 0,50 ou 120)'); return; }
 
   const btn = document.getElementById('btn-save-product');
   btn.innerHTML = '<span class="spinner"></span>Enregistrement...';
   btn.disabled  = true;
 
   try {
+    const brand = await ensureBrand(brandRaw);
     // Upload pending images
     const finalUrls = [];
     for(let i=0; i<galleryImages.length; i++){
@@ -1200,11 +1217,11 @@ async function saveProduct(){
 
     const data = {
       name, brand, category, badge,
-      price, promo_price: promoPrice,
+      price: price || sizesValid[0].price, promo_price: promoPrice,
       img, is_new: badge==='new',
       image_url: imageUrl,
       images: finalUrls,
-      sizes: sizesData,
+      sizes: sizesValid,
       description: desc,
       ingredients: ingr,
       notes_top:   noteTags.top,
