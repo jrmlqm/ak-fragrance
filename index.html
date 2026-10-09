@@ -31,6 +31,25 @@
       <div class="auth-field"><label>Mot de passe</label><input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="auth-btn" onclick="doLogin()">Se connecter</button>
       <div class="auth-msg" id="login-msg"></div>
+      <a class="auth-link" onclick="openForgot()">Mot de passe oublié ?</a>
+    </div>
+
+    <!-- MOT DE PASSE OUBLIÉ -->
+    <div class="auth-panel" id="auth-forgot">
+      <p class="auth-text">Saisissez l'email de votre compte : nous vous enverrons un lien pour choisir un nouveau mot de passe.</p>
+      <div class="auth-field"><label>Email</label><input type="email" id="forgot-email" placeholder="votre@email.fr" onkeydown="if(event.key==='Enter')doForgot()"></div>
+      <button class="auth-btn" id="forgot-btn" onclick="doForgot()">Envoyer le lien</button>
+      <div class="auth-msg" id="forgot-msg"></div>
+      <a class="auth-link" onclick="openAuth('login')">← Retour à la connexion</a>
+    </div>
+
+    <!-- NOUVEAU MOT DE PASSE (après clic sur le lien reçu par email) -->
+    <div class="auth-panel" id="auth-reset">
+      <p class="auth-text">Choisissez votre nouveau mot de passe.</p>
+      <div class="auth-field"><label>Nouveau mot de passe</label><input type="password" id="reset-password" placeholder="Min. 6 caractères" autocomplete="new-password" onkeydown="if(event.key==='Enter')document.getElementById('reset-password-confirm').focus()"></div>
+      <div class="auth-field"><label>Confirmer le mot de passe</label><input type="password" id="reset-password-confirm" placeholder="Saisissez-le à nouveau" autocomplete="new-password" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+      <button class="auth-btn" id="reset-btn" onclick="doResetPassword()">Enregistrer le mot de passe</button>
+      <div class="auth-msg" id="reset-msg"></div>
     </div>
 
     <!-- INSCRIPTION -->

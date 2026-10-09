@@ -97,6 +97,7 @@ async function loadData() {
     renderAll();
     await checkSession();
     await handlePaymentReturn();
+    handleAuthRedirect();
     connectRealtime();
   } catch (e) {
     notif('Erreur de chargement');
@@ -386,11 +387,117 @@ function openFavProduct(productId) {
 
 function handleFavClick() { if (currentUser) { showPage('favorites'); } else { openAuth('login'); notif('Connectez-vous pour voir vos favoris'); } }
 
+/* ── MOT DE PASSE OUBLIÉ ── */
+// Supabase renvoie vers le site avec #access_token=…&type=recovery (ou #error=…) :
+// on le lit avant que la navigation ne remplace le hash.
+const authRedirect = (() => {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  if (h.get('type') === 'recovery' && h.get('access_token')) {
+    return { recovery: { access_token: h.get('access_token'), refresh_token: h.get('refresh_token') } };
+  }
+  if (h.get('error_code') || h.get('error')) return { error: h.get('error_code') || h.get('error') };
+  return null;
+})();
+let recoverySession = null;
+
+function openForgot() {
+  const loginEmail = document.getElementById('login-email')?.value.trim();
+  const forgotEmail = document.getElementById('forgot-email');
+  if (forgotEmail && loginEmail && !forgotEmail.value) forgotEmail.value = loginEmail;
+  openAuth('forgot');
+  setTimeout(() => forgotEmail?.focus(), 100);
+}
+
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const msg = document.getElementById('forgot-msg');
+  const btn = document.getElementById('forgot-btn');
+  msg.className = 'auth-msg';
+  msg.textContent = '';
+  if (!email || !email.includes('@')) {
+    msg.className = 'auth-msg error';
+    msg.textContent = 'Veuillez saisir un email valide.';
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(location.origin + '/')}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (res.status === 429) throw new Error('Trop de demandes, réessayez dans quelques minutes.');
+    if (!res.ok) throw new Error('Envoi impossible pour le moment, réessayez plus tard.');
+    // Même message que le compte existe ou non (ne révèle pas quels emails sont inscrits)
+    msg.className = 'auth-msg success';
+    msg.textContent = 'Si un compte existe avec cet email, un lien vient de vous être envoyé. Pensez à vérifier vos spams.';
+  } catch (e) {
+    msg.className = 'auth-msg error';
+    msg.textContent = e.message;
+  }
+  btn.disabled = false;
+}
+
+function handleAuthRedirect() {
+  if (!authRedirect) return;
+  if (authRedirect.error) {
+    openAuth('forgot');
+    const msg = document.getElementById('forgot-msg');
+    msg.className = 'auth-msg error';
+    msg.textContent = 'Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.';
+    return;
+  }
+  recoverySession = authRedirect.recovery;
+  openAuth('reset');
+  setTimeout(() => document.getElementById('reset-password')?.focus(), 100);
+}
+
+async function doResetPassword() {
+  const password = document.getElementById('reset-password').value;
+  const confirm = document.getElementById('reset-password-confirm').value;
+  const msg = document.getElementById('reset-msg');
+  const btn = document.getElementById('reset-btn');
+  msg.className = 'auth-msg error';
+  if (password.length < 6) { msg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.'; return; }
+  if (password !== confirm) { msg.textContent = 'Les deux mots de passe ne correspondent pas.'; return; }
+  if (!recoverySession) { msg.textContent = 'Lien invalide. Demandez un nouveau lien.'; return; }
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + recoverySession.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const user = await res.json();
+    if (!res.ok) {
+      const m = (user.msg || user.error_description || user.message || '');
+      throw new Error(/different from the old/i.test(m) ? 'Le nouveau mot de passe doit être différent de l\'ancien.' : 'Ce lien a expiré. Demandez un nouveau lien.');
+    }
+    // Le lien connecte aussi l'utilisateur : on garde la session
+    localStorage.setItem('ak_session', JSON.stringify({ ...recoverySession, user }));
+    currentUser = user;
+    accessToken = recoverySession.access_token;
+    recoverySession = null;
+    updateAccountUI();
+    await loadUserData();
+    closeAuth();
+    notif('Mot de passe modifié — vous êtes connecté(e) ✓');
+    showPage('account');
+  } catch (e) {
+    msg.textContent = e.message;
+  }
+  btn.disabled = false;
+}
+
 /* ── AUTH MODAL ── */
 function openAuth(tab = 'login') {
-  switchAuthTab(tab, document.querySelectorAll('.auth-tab')[tab === 'login' ? 0 : 1]);
-  document.getElementById('login-msg').textContent = '';
-  document.getElementById('register-msg').textContent = '';
+  const tabIndex = { login: 0, register: 1 }[tab];
+  switchAuthTab(tab, tabIndex === undefined ? null : document.querySelectorAll('.auth-tab')[tabIndex]);
+  document.querySelector('.auth-tabs').style.display = tabIndex === undefined ? 'none' : '';
+  ['login-msg', 'register-msg', 'forgot-msg', 'reset-msg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
   document.getElementById('auth-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1254,6 +1361,8 @@ window.addEventListener('popstate', e => {
   const hash = location.hash.replace('#', '');
   if (hash && valid.includes(hash)) showPage(hash, false);
   else history.replaceState({ page: 'home' }, '', '#home');
+  // Lien « Mot de passe oublié » depuis l'admin
+  if (hash === 'forgot') openForgot();
 })();
 
 function toggleMobileMenu() {
