@@ -312,9 +312,16 @@ footer{background:var(--cream);border-top:1px solid var(--line);padding:70px 60p
   footer{grid-template-columns:1fr 1fr;padding:48px 24px}
   .footer-bottom{padding:16px 24px}
   .shop-layout{grid-template-columns:1fr}
-  .filters{display:none}
+  .filters{position:fixed;top:0;left:0;bottom:0;width:min(86vw,360px);z-index:700;overflow-y:auto;padding:0 24px 0;transform:translateX(-100%);transition:transform .35s cubic-bezier(.23,1,.32,1);box-shadow:0 0 40px rgba(51,36,26,.18)}
+  .filters-open .filters{transform:none}
+  .filters-backdrop{display:block;position:fixed;inset:0;background:rgba(51,36,26,.4);z-index:690;opacity:0;pointer-events:none;transition:opacity .3s}
+  .filters-open .filters-backdrop{opacity:1;pointer-events:auto}
+  .filters-mobile-head{display:flex;position:sticky;top:0;background:var(--cream);z-index:1;justify-content:space-between;align-items:center;padding:22px 0 18px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+  .filters-mobile-foot{display:flex;position:sticky;bottom:0;background:var(--cream);gap:10px;padding:16px 0 20px;margin-top:28px;border-top:1px solid var(--line)}
+  .filters-toggle{display:flex}
   .shop-content{padding:32px 24px}
-  .shop-controls{flex-direction:column;align-items:stretch}
+  .shop-controls{flex-direction:column;align-items:stretch;width:100%}
+  .shop-sort select{width:100%}
   .shop-search input{width:100%}
   .product-page{grid-template-columns:1fr;padding:32px 24px;gap:32px}
   .product-detail h1{font-size:38px}
@@ -512,3 +519,17 @@ a.icon-btn{text-decoration:none}
   .showroom-editorial{padding:64px 16px}
   .admin-access{padding:20px;justify-content:center;text-align:center}
 }
+
+/* ── BOUTIQUE : titre maison + filtres mobiles ── */
+.shop-title{display:flex;flex-direction:column;gap:6px}
+.shop-all-link{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;width:fit-content;padding-bottom:3px;border-bottom:1px solid var(--gold)}
+.shop-all-link:hover{color:var(--brown-dark)}
+.filters-toggle{align-items:center;justify-content:center;gap:10px;padding:13px 18px;background:var(--brown-dark);color:var(--beige-light);border:none;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer}
+.filters-toggle svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round}
+.filters-badge:empty{display:none}
+.filters-badge{min-width:18px;height:18px;border-radius:9px;background:var(--gold);color:#fff;font-size:10px;letter-spacing:0;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+@media(min-width:901px){.filters-toggle,.filters-backdrop,.filters-mobile-head,.filters-mobile-foot{display:none}}
+.filters-mobile-head span{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--brown-dark)}
+.filters-mobile-head button{width:36px;height:36px;border:1px solid var(--line);background:transparent;cursor:pointer;color:var(--brown-dark);font-size:13px}
+.filters-reset{flex:1;padding:14px;background:transparent;border:1px solid var(--line);font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);cursor:pointer}
+.filters-apply{flex:2;padding:14px;background:var(--brown-dark);color:var(--beige-light);border:none;font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer}

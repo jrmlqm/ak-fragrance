@@ -1111,7 +1111,7 @@ function renderAll() {
     const featured = allBrands.filter(b => b.featured);
     const toShow = featured.length ? featured : allBrands.slice(0, 4);
     hb.innerHTML = toShow.map(b =>
-      `<div class="brand-card" onclick="showPage('brands')"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
+      `<div class="brand-card" data-brand="${escAttr(b.name)}" onclick="openBrand(this.dataset.brand)"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
     ).join('');
   }
 
@@ -1123,13 +1123,17 @@ function renderAll() {
 
   const bf = document.getElementById('brands-full');
   if (bf) bf.innerHTML = allBrands.map(b =>
-    `<div class="brand-card" onclick="showPage('shop')"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
+    `<div class="brand-card" data-brand="${escAttr(b.name)}" onclick="openBrand(this.dataset.brand)"><div class="brand-name">${b.name}</div><div class="brand-desc">${b.description}</div></div>`
   ).join('');
 
   const bfilt = document.getElementById('brand-filters');
-  if (bfilt) bfilt.innerHTML = allBrands.map(b =>
-    `<label class="filter-check"><input type="checkbox" value="${b.name}" onchange="filterShop()"><span>${b.name}</span></label>`
-  ).join('');
+  if (bfilt) {
+    // Garde la sélection quand le catalogue est rafraîchi en temps réel
+    const checked = new Set([...bfilt.querySelectorAll('input:checked')].map(cb => cb.value));
+    bfilt.innerHTML = allBrands.map(b =>
+      `<label class="filter-check"><input type="checkbox" value="${escAttr(b.name)}"${checked.has(b.name) ? ' checked' : ''} onchange="filterShop()"><span>${b.name}</span></label>`
+    ).join('');
+  }
 
   renderNoteFilters();
 
@@ -1177,17 +1181,75 @@ function filterShop() {
   const getCheckedNotes = id => [...document.querySelectorAll(`#${id} input:checked`)].map(cb => cb.nextElementSibling.textContent);
   const checkedNotes = [...getCheckedNotes('notes-top-filters'), ...getCheckedNotes('notes-heart-filters'), ...getCheckedNotes('notes-base-filters')];
 
+  const showInStock = document.getElementById('filter-instock')?.checked ?? true;
+  const showOut = document.getElementById('filter-out')?.checked ?? true;
+
   let list = products.filter(p => {
     const ms = !q || (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.notes_top || []).join(' ').toLowerCase().includes(q);
     const mb = checkedBrands.length === 0 || checkedBrands.includes((p.brand || '').toLowerCase());
     const mn = checkedNotes.length === 0 || checkedNotes.some(n => (p.notes_top||[]).includes(n) || (p.notes_heart||[]).includes(n) || (p.notes_base||[]).includes(n));
-    return ms && mb && mn && (Number(p.price) || 0) <= maxP;
+    const isOut = p.badge === 'out';
+    const ma = (isOut && showOut) || (!isOut && showInStock) || (!showOut && !showInStock);
+    return ms && mb && mn && ma && (Number(p.price) || 0) <= maxP;
   });
   if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
   else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
   else if (sort === 'new') list = [...list.filter(p => p.is_new || p.badge === 'new'), ...list.filter(p => !p.is_new && p.badge !== 'new')];
   const el = document.getElementById('shop-products');
   if (el) el.innerHTML = list.length ? list.map(productCardHTML).join('') : '<div class="no-results">Aucun produit trouvé</div>';
+  updateShopHeader(list.length, checkedBrands.length + checkedNotes.length + (showInStock && showOut ? 0 : 1) + (maxP < (Number(document.querySelector('.price-range')?.max) || maxP) ? 1 : 0));
+}
+
+function escAttr(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+// Titre « La Boutique » ou nom de la maison, compteur et pastille des filtres actifs
+function updateShopHeader(count, activeFilters) {
+  const brands = [...document.querySelectorAll('#brand-filters input:checked')].map(cb => cb.value);
+  const title = document.getElementById('shop-title');
+  const allLink = document.getElementById('shop-all-link');
+  if (title) title.textContent = brands.length === 1 ? brands[0] : 'La Boutique';
+  if (allLink) allLink.style.display = brands.length ? '' : 'none';
+  const countEl = document.getElementById('filters-count');
+  if (countEl) countEl.textContent = count;
+  const badge = document.getElementById('filters-badge');
+  if (badge) badge.textContent = activeFilters ? activeFilters : '';
+}
+
+// Clic sur une maison : boutique filtrée sur cette maison
+function openBrand(name) {
+  resetFilters(false);
+  document.querySelectorAll('#brand-filters input[type=checkbox]').forEach(cb => {
+    cb.checked = cb.value.toLowerCase() === (name || '').toLowerCase();
+  });
+  filterShop();
+  showPage('shop');
+}
+
+function resetFilters(refresh = true) {
+  document.querySelectorAll('#shop-filters input[type=checkbox]').forEach(cb => {
+    cb.checked = cb.id === 'filter-instock' || cb.id === 'filter-out';
+  });
+  const slider = document.querySelector('.price-range');
+  if (slider) {
+    slider.value = slider.max;
+    const pmax = document.getElementById('pmax');
+    if (pmax) pmax.textContent = slider.max + '€';
+  }
+  const search = document.getElementById('shop-search-input');
+  if (search) search.value = '';
+  if (refresh) filterShop();
+}
+
+/* ── Filtres en panneau latéral sur mobile ── */
+function openFilters() {
+  document.getElementById('page-shop')?.classList.add('filters-open');
+  document.body.style.overflow = 'hidden';
+}
+function closeFilters() {
+  document.getElementById('page-shop')?.classList.remove('filters-open');
+  document.body.style.overflow = '';
 }
 
 let currentProductPrice = 0;
@@ -1331,7 +1393,7 @@ function updateSearchResults(q) {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeSearch(); closeAuth(); }
+  if (e.key === 'Escape') { closeSearch(); closeAuth(); closeFilters(); }
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
 });
 
@@ -1340,6 +1402,7 @@ document.addEventListener('keydown', e => {
 ══════════════════════════════ */
 function showPage(name, pushState = true) {
   closeMobileMenu();
+  document.getElementById('page-shop')?.classList.remove('filters-open');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
   const p = document.getElementById('page-' + name);

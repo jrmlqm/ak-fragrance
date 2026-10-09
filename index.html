@@ -196,14 +196,16 @@
 <!-- PAGE BOUTIQUE -->
 <div class="page" id="page-shop">
   <div class="shop-layout">
-    <aside class="filters">
+    <div class="filters-backdrop" onclick="closeFilters()"></div>
+    <aside class="filters" id="shop-filters">
+      <div class="filters-mobile-head"><span>Filtres</span><button onclick="closeFilters()" aria-label="Fermer">✕</button></div>
       <div class="filter-section-title">Maisons</div><hr class="filter-hr"><div id="brand-filters"></div>
       <div class="filter-section-title">Prix</div><hr class="filter-hr">
       <input type="range" class="price-range" min="0" max="500" value="500" oninput="document.getElementById('pmax').textContent=this.value+'€';filterShop()">
       <div class="price-vals"><span>0€</span><span id="pmax">500€</span></div>
       <div class="filter-section-title">Disponibilité</div><hr class="filter-hr">
-      <label class="filter-check"><input type="checkbox" checked><span>En stock</span></label>
-      <label class="filter-check"><input type="checkbox"><span>Rupture de stock</span></label>
+      <label class="filter-check"><input type="checkbox" id="filter-instock" checked onchange="filterShop()"><span>En stock</span></label>
+      <label class="filter-check"><input type="checkbox" id="filter-out" checked onchange="filterShop()"><span>Rupture de stock</span></label>
       <div class="filter-section-title" style="margin-top:24px">Pyramide olfactive</div><hr class="filter-hr">
       <div class="pyramid-level-label">Notes de tête</div>
       <div id="notes-top-filters"></div>
@@ -211,11 +213,19 @@
       <div id="notes-heart-filters"></div>
       <div class="pyramid-level-label" style="margin-top:14px">Notes de fond</div>
       <div id="notes-base-filters"></div>
+      <div class="filters-mobile-foot">
+        <button class="filters-reset" onclick="resetFilters()">Tout effacer</button>
+        <button class="filters-apply" onclick="closeFilters()">Voir les <span id="filters-count">0</span> produits</button>
+      </div>
     </aside>
     <div class="shop-content">
       <div class="shop-header">
-        <h1>La Boutique</h1>
+        <div class="shop-title">
+          <h1 id="shop-title">La Boutique</h1>
+          <a class="shop-all-link" id="shop-all-link" onclick="resetFilters()" style="display:none">← Toutes les maisons</a>
+        </div>
         <div class="shop-controls">
+          <button class="filters-toggle" onclick="openFilters()"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg>Filtres<span class="filters-badge" id="filters-badge"></span></button>
           <div class="shop-search">
             <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
             <input type="text" id="shop-search-input" placeholder="Rechercher…" oninput="filterShop()">
